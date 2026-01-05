@@ -1,0 +1,135 @@
+from uuid import UUID
+
+from faststream.rabbit import RabbitBroker, RabbitMessage
+
+from ..schemas.request import AccessDataRequest
+
+from ..schemas.core.request import (
+    GetUseServersRequest,
+    ServerCreateRequest,
+    ServerDeleteRequest,
+    ServerGetRequest,
+    ServerUpdateRequest,
+)
+
+from ..schemas.core.response import ServerDetailResponse, ServerListResponse
+
+from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
+
+
+class ServerRepository:
+    def __init__(self, broker: RabbitBroker):
+        self.broker = broker
+
+    async def get_public_servers(
+        self,
+    ) -> ResponseMessage[list[ServerListResponse] | ErrorResponse]:
+        response: RabbitMessage = await self.broker.request(
+            None, queue="server.public_server_list"
+        )
+        return ResponseMessage[
+            list[ServerListResponse] | ErrorResponse
+        ].model_validate_json(response.body)
+
+    async def get_user_servers(
+        self, user_id: UUID
+    ) -> ResponseMessage[list[ServerListResponse] | ErrorResponse]:
+        request = GetUseServersRequest(user_id=user_id)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.user_server_list"
+        )
+        return ResponseMessage[
+            list[ServerListResponse] | ErrorResponse
+        ].model_validate_json(response.body)
+
+    async def create_server(
+        self,
+        user_id: UUID,
+        name: str,
+        public: bool,
+        description: str = "",
+        rating_set_id: UUID | None = None,
+        role_set_id: UUID | None = None,
+    ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
+        request = ServerCreateRequest(
+            user_id=user_id,
+            name=name,
+            public=public,
+            description=description,
+            rating_set_id=rating_set_id,
+            role_set_id=role_set_id,
+        )
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.create"
+        )
+        return ResponseMessage[
+            ServerDetailResponse | ErrorResponse
+        ].model_validate_json(response.body)
+
+    async def get_server(
+        self, access_data: AccessDataRequest
+    ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
+        request = ServerGetRequest(access_data=access_data)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.get_info"
+        )
+        return ResponseMessage[
+            ServerDetailResponse | ErrorResponse
+        ].model_validate_json(response.body)
+
+    async def update_server(
+        self,
+        access_data: AccessDataRequest,
+        name: str | None = None,
+        description: str | None = None,
+        public: bool | None = None,
+        banner_id: UUID | None = None,
+        icon_id: UUID | None = None,
+    ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
+        request = ServerUpdateRequest(
+            access_data=access_data,
+            name=name,
+            description=description,
+            public=public,
+            banner_id=banner_id,
+            icon_id=icon_id,
+        )
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.update"
+        )
+        return ResponseMessage[
+            ServerDetailResponse | ErrorResponse
+        ].model_validate_json(response.body)
+
+    async def delete_banner(
+        self, access_data: AccessDataRequest
+    ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        request = ServerDeleteRequest(access_data=access_data)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.banner.delete"
+        )
+        return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
+            response.body
+        )
+
+    async def delete_icon(
+        self, access_data: AccessDataRequest
+    ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        request = ServerDeleteRequest(access_data=access_data)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.icon.delete"
+        )
+        return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
+            response.body
+        )
+
+    async def delete_server(
+        self, access_data: AccessDataRequest
+    ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        request = ServerDeleteRequest(access_data=access_data)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="server.delete"
+        )
+        return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
+            response.body
+        )
