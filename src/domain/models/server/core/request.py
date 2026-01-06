@@ -1,0 +1,21 @@
+from uuid import UUID
+from pydantic import BaseModel, Field
+
+from ..request import UserIncludedRequest
+
+class ServerGetRequest(UserIncludedRequest):
+    server_id: UUID
+
+class ServerCreateRequest(BaseModel):
+    name: str = Field(..., max_length=128)
+    description: str = Field(default="")
+    public: bool
+
+    rating_set_id: UUID | None = None
+    role_set_id: UUID | None = None
+
+
+class ServerUpdateRequest(BaseModel):
+    name: str | None = Field(None, max_length=128)
+    description: str | None = None
+    public: bool | None = None

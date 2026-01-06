@@ -9,17 +9,18 @@ from ..schemas.custom.request import (
 from ..schemas.custom.response import CustomResponse
 from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
 from ..schemas.request import AccessDataRequest
+from src.domain.models.access import AccessData
 
 
-class CustomRepository:
+class MemberCustomRepository:
     def __init__(self, broker: RabbitBroker):
         self.broker = broker
 
     async def get_customs_by_member(
-        self, access_data: AccessDataRequest, target_member_id: UUID
+        self, access: AccessData, target_member_id: UUID
     ) -> ResponseMessage[list[CustomResponse] | ErrorResponse]:
         request = GetCustomsRequest(
-            access_data=access_data, target_member_id=target_member_id
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), target_member_id=target_member_id
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="custom.get_by_member"
@@ -29,10 +30,10 @@ class CustomRepository:
         ].model_validate_json(response.body)
 
     async def create_custom(
-        self, access_data: AccessDataRequest, target_member_id: UUID
+        self, access: AccessData, target_member_id: UUID
     ) -> ResponseMessage[CustomResponse | ErrorResponse]:
         request = CreateCustomRequest(
-            access_data=access_data, target_member_id=target_member_id
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), target_member_id=target_member_id
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="custom.create"
@@ -42,9 +43,9 @@ class CustomRepository:
         )
 
     async def delete_custom(
-        self, access_data: AccessDataRequest, custom_id: UUID
+        self, access: AccessData, custom_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = DeleteCustomRequest(access_data=access_data, custom_id=custom_id)
+        request = DeleteCustomRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), custom_id=custom_id)
         response: RabbitMessage = await self.broker.request(
             request, queue="custom.delete"
         )
@@ -54,13 +55,13 @@ class CustomRepository:
 
     async def update_custom(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         custom_id: UUID,
         game_role_id: UUID,
         rating: int,
     ) -> ResponseMessage[CustomResponse | ErrorResponse]:
         request = UpdateGameRoleRatingRequest(
-            access_data=access_data,
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
             custom_id=custom_id,
             game_role_id=game_role_id,
             rating=rating,

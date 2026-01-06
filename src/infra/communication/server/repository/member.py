@@ -3,6 +3,7 @@ from datetime import datetime
 
 from faststream.rabbit import RabbitBroker, RabbitMessage
 from ..schemas.request import AccessDataRequest
+from src.domain.models.access import AccessData
 from ..schemas.member.request import (
     AddMemberRestrictionRequest,
     GetMemberByUserRequest,
@@ -41,9 +42,9 @@ class MemberRepository:
         )
 
     async def list_members(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[list[MemberResponse] | ErrorResponse]:
-        request = GetMemberListRequest(access_data=access_data)
+        request = GetMemberListRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask))
         response: RabbitMessage = await self.broker.request(
             request, queue="member.list"
         )
@@ -72,9 +73,9 @@ class MemberRepository:
         )
 
     async def create_virtual(
-        self, access_data: AccessDataRequest, nickname: str
+        self, access: AccessData, nickname: str
     ) -> ResponseMessage[MemberResponse | ErrorResponse]:
-        request = VirtualMemberCreateRequest(access_data=access_data, nickname=nickname)
+        request = VirtualMemberCreateRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), nickname=nickname)
         response: RabbitMessage = await self.broker.request(
             request, queue="member.virtual.create"
         )
@@ -83,10 +84,10 @@ class MemberRepository:
         )
 
     async def get_member(
-        self, access_data: AccessDataRequest, target_member_id: UUID
+        self, access: AccessData, target_member_id: UUID
     ) -> ResponseMessage[MemberResponse | ErrorResponse]:
         request = MemberGetInfoRequest(
-            access_data=access_data, target_member_id=target_member_id
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), target_member_id=target_member_id
         )
         response: RabbitMessage = await self.broker.request(request, queue="member.get")
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
@@ -95,13 +96,13 @@ class MemberRepository:
 
     async def update_member(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         target_member_id: UUID,
         name: str | None = None,
         server_role_id: UUID | None = None,
     ) -> ResponseMessage[MemberResponse | ErrorResponse]:
         request = MemberUpdateRequest(
-            access_data=access_data,
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
             target_member_id=target_member_id,
             name=name,
             server_role_id=server_role_id,
@@ -114,10 +115,10 @@ class MemberRepository:
         )
 
     async def kick_member(
-        self, access_data: AccessDataRequest, target_member_id: UUID
+        self, access: AccessData, target_member_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = KickMemberRequest(
-            access_data=access_data, target_member_id=target_member_id
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), target_member_id=target_member_id
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="member.kick"
@@ -128,12 +129,12 @@ class MemberRepository:
 
     async def migrate_member(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         origin_member_id: UUID,
         target_member_id: UUID,
     ) -> ResponseMessage[MemberResponse | ErrorResponse]:
         request = MemberMigrationRequest(
-            access_data=access_data,
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
             origin_member_id=origin_member_id,
             target_member_id=target_member_id,
         )
@@ -155,10 +156,10 @@ class MemberRepository:
         ].model_validate_json(response.body)
 
     async def list_restrictions(
-        self, access_data: AccessDataRequest, target_member_id: UUID
+        self, access: AccessData, target_member_id: UUID
     ) -> ResponseMessage[list[MemberRestrictionResponse] | ErrorResponse]:
         request = GetMemberRestrictionsRequest(
-            access_data=access_data, target_member_id=target_member_id
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), target_member_id=target_member_id
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="member.restriction.list"
@@ -169,14 +170,14 @@ class MemberRepository:
 
     async def add_restriction(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         target_member_id: UUID,
         reason: str,
         expiration_date: datetime,
         restriction_id: UUID,
     ) -> ResponseMessage[MemberRestrictionResponse | ErrorResponse]:
         request = AddMemberRestrictionRequest(
-            access_data=access_data,
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
             target_member_id=target_member_id,
             reason=reason,
             expiration_date=expiration_date,
@@ -191,12 +192,12 @@ class MemberRepository:
 
     async def remove_restriction(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         target_member_id: UUID,
         member_restriction_id: UUID,
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = RemoveMemberRestrictionRequest(
-            access_data=access_data,
+            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
             target_member_id=target_member_id,
             member_restriction_id=member_restriction_id,
         )

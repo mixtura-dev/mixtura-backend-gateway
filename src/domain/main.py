@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware import Middleware
 
@@ -10,6 +10,7 @@ from src.infra.redis import RedisSessionManager
 from faststream.rabbit.fastapi import RabbitRouter
 
 rabbit_router = RabbitRouter(env.rabbit.url)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,15 +22,15 @@ async def lifespan(app: FastAPI):
     if await redis_engine.opened:
         await redis_engine.close()
 
+
 app = FastAPI(
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
-    title='Mixtura',
+    title="Mixtura",
     version="2.0",
-    middleware=[
-        Middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
-    ],
-    lifespan=lifespan)
+    middleware=[Middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])],
+    lifespan=lifespan,
+)
 
 app.include_router(rabbit_router)
 app.include_router(api.router)

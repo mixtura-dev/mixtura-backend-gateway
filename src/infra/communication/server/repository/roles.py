@@ -10,6 +10,7 @@ from ..schemas.roles.request import (
 )
 
 from ..schemas.request import AccessDataRequest
+from src.domain.models.access import AccessData
 
 from ..schemas.roles.response import PermissionResponse, ServerRoleResponse
 
@@ -31,8 +32,9 @@ class ServerRoleRepository:
         ].model_validate_json(response.body)
 
     async def list_roles(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[list[ServerRoleResponse] | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ListServerRolesRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.list"
@@ -43,11 +45,12 @@ class ServerRoleRepository:
 
     async def create_role(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         name: str,
         position: int,
         permission_mask: int,
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = CreateServerRoleRequest(
             access_data=access_data,
             name=name,
@@ -63,12 +66,13 @@ class ServerRoleRepository:
 
     async def update_role(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         role_id: UUID,
         target_permissions_ids: list[UUID],
         name: str | None = None,
         position: int | None = None,
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = UpdateServerRoleRequest(
             access_data=access_data,
             role_id=role_id,
@@ -85,10 +89,11 @@ class ServerRoleRepository:
 
     async def update_role_permission(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         role_id: UUID,
         target_permissions_ids: list[UUID],
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = UpdateServerRolePermissionsRequest(
             access_data=access_data,
             role_id=role_id,
@@ -102,9 +107,9 @@ class ServerRoleRepository:
         )
 
     async def delete_role(
-        self, access_data: AccessDataRequest, role_id: UUID
+        self, access: AccessData, role_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = DeleteServerRoleRequest(access_data=access_data, role_id=role_id)
+        request = DeleteServerRoleRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), role_id=role_id)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.delete"
         )

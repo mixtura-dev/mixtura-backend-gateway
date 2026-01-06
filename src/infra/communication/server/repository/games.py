@@ -8,11 +8,12 @@ from ..schemas.games.request import (
     GetServerGameListRequest,
 )
 from ..schemas.request import AccessDataRequest
+from src.domain.models.access import AccessData
 from ..schemas.games.response import GameResponse
 from ..schemas.response import ErrorResponse, ResponseMessage
 
 
-class GameRepository:
+class ServerGameRepository:
     def __init__(self, broker: RabbitBroker):
         self.broker = broker
 
@@ -27,8 +28,9 @@ class GameRepository:
         )
 
     async def add_game(
-        self, access_data: AccessDataRequest, game_ids: list[UUID]
+        self, access: AccessData, game_ids: list[UUID]
     ) -> ResponseMessage[list[GameResponse] | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = GameAddRequest(access_data=access_data, game_ids=game_ids)
         response: RabbitMessage = await self.broker.request(
             request, queue="game.server.add"
@@ -38,8 +40,9 @@ class GameRepository:
         )
 
     async def remove_game(
-        self, access_data: AccessDataRequest, game_id: UUID
+        self, access: AccessData, game_id: UUID
     ) -> ResponseMessage[list[GameResponse] | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = GameRemoveRequest(access_data=access_data, game_id=game_id)
         response: RabbitMessage = await self.broker.request(
             request, queue="game.server.remove"
@@ -49,8 +52,9 @@ class GameRepository:
         )
 
     async def set_game(
-        self, access_data: AccessDataRequest, game_ids: list[UUID]
+        self, access: AccessData, game_ids: list[UUID]
     ) -> ResponseMessage[list[GameResponse] | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = GameSetRequest(access_data=access_data, game_ids=game_ids)
         response: RabbitMessage = await self.broker.request(
             request, queue="game.server.set"
@@ -60,8 +64,9 @@ class GameRepository:
         )
 
     async def list_server_games(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[list[GameResponse] | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = GetServerGameListRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="game.server.list"

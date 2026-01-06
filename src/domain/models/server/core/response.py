@@ -14,8 +14,8 @@ class ServerListResponse(BaseModel):
     id: UUID
     name: str
     description: str
-    icon_id: None | UUID = None
-    banner_id: None | UUID = None
+    icon_url: None | str = None
+    banner_url: None | str = None
     owner_id: UUID
     public: bool
     created_at: datetime
@@ -25,3 +25,9 @@ class ServerDetailResponse(ServerListResponse):
     role_set: Optional[GameRoleSetResponse] = None
     
     games: list[GameResponse] = []
+
+class PermissionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    code: str

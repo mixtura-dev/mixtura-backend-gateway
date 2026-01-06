@@ -3,6 +3,7 @@ from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
 
 from ..schemas.request import AccessDataRequest
+from src.domain.models.access import AccessData
 
 from ..schemas.core.request import (
     GetUseServersRequest,
@@ -17,7 +18,7 @@ from ..schemas.core.response import ServerDetailResponse, ServerListResponse
 from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
-class ServerRepository:
+class ServerCoreRepository:
     def __init__(self, broker: RabbitBroker):
         self.broker = broker
 
@@ -67,8 +68,9 @@ class ServerRepository:
         ].model_validate_json(response.body)
 
     async def get_server(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ServerGetRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.get_info"
@@ -79,13 +81,14 @@ class ServerRepository:
 
     async def update_server(
         self,
-        access_data: AccessDataRequest,
+        access: AccessData,
         name: str | None = None,
         description: str | None = None,
         public: bool | None = None,
         banner_id: UUID | None = None,
         icon_id: UUID | None = None,
     ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ServerUpdateRequest(
             access_data=access_data,
             name=name,
@@ -102,8 +105,9 @@ class ServerRepository:
         ].model_validate_json(response.body)
 
     async def delete_banner(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ServerDeleteRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.banner.delete"
@@ -113,8 +117,9 @@ class ServerRepository:
         )
 
     async def delete_icon(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ServerDeleteRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.icon.delete"
@@ -124,8 +129,9 @@ class ServerRepository:
         )
 
     async def delete_server(
-        self, access_data: AccessDataRequest
+        self, access: AccessData
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
+        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
         request = ServerDeleteRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.delete"
