@@ -20,14 +20,9 @@ class ServerListResponse(BaseModel):
     public: bool
     created_at: datetime
 
+
 class ServerDetailResponse(ServerListResponse):
     rating_set: Optional[RatingSetResponse] = None
     role_set: Optional[GameRoleSetResponse] = None
-    
+
     games: list[GameResponse] = []
-
-class PermissionResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID
-    code: str

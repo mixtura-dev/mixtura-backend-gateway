@@ -1,6 +1,8 @@
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
+from ..member.response import ReducedMemberResponse
+
 from ..game_roles.response import GameRoleItemResponse
 
 
@@ -14,4 +16,6 @@ class CustomResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    member: ReducedMemberResponse
+    creator: ReducedMemberResponse
     custom_ratings: list[CustomRatingResponse]

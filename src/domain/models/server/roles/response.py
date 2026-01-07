@@ -8,6 +8,7 @@ class PermissionResponse(BaseModel):
     id: UUID
     code: str
 
+
 class ServerRoleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

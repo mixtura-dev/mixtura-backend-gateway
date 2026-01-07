@@ -7,6 +7,7 @@ from .game_role import ServerGameRoleController
 from .game import ServerGameController
 from .invite import ServerInviteController
 from .rating import ServerRatingController
+from .role import ServerRoleController
 
 router = APIRouter(
     prefix="/server",
@@ -19,4 +20,4 @@ router.include_router(ServerGameRoleController.create_router())
 router.include_router(ServerRatingController.create_router())
 router.include_router(MemberCustomController.create_router())
 router.include_router(MemberController.create_router())
-
+router.include_router(ServerRoleController.create_router())

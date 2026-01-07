@@ -2,20 +2,14 @@ from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
+from ..roles.response import ServerRoleResponse
+
 
 # class ServerPermissionResponse(BaseModel):
 #     model_config = ConfigDict(from_attributes=True)
 #
 #     id: UUID
 #     code_name: str
-
-
-class ServerRoleResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    name: str
-    position: int
-    permission_mask: int
 
 
 class ReducedMemberResponse(BaseModel):

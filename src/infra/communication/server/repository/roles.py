@@ -34,7 +34,12 @@ class ServerRoleRepository:
     async def list_roles(
         self, access: AccessData
     ) -> ResponseMessage[list[ServerRoleResponse] | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = ListServerRolesRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.list"
@@ -48,14 +53,17 @@ class ServerRoleRepository:
         access: AccessData,
         name: str,
         position: int,
-        permission_mask: int,
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = CreateServerRoleRequest(
             access_data=access_data,
             name=name,
             position=position,
-            permission_mask=permission_mask,
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.create"
@@ -68,17 +76,20 @@ class ServerRoleRepository:
         self,
         access: AccessData,
         role_id: UUID,
-        target_permissions_ids: list[UUID],
         name: str | None = None,
         position: int | None = None,
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = UpdateServerRoleRequest(
             access_data=access_data,
             role_id=role_id,
             name=name,
             position=position,
-            target_permissions_ids=target_permissions_ids,
         )
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.update"
@@ -93,7 +104,12 @@ class ServerRoleRepository:
         role_id: UUID,
         target_permissions_ids: list[UUID],
     ) -> ResponseMessage[ServerRoleResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = UpdateServerRolePermissionsRequest(
             access_data=access_data,
             role_id=role_id,
@@ -109,7 +125,15 @@ class ServerRoleRepository:
     async def delete_role(
         self, access: AccessData, role_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = DeleteServerRoleRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), role_id=role_id)
+        request = DeleteServerRoleRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
+            role_id=role_id,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="server.role.delete"
         )

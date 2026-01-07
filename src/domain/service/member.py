@@ -19,7 +19,7 @@ class MemberService:
             member_id=response.message.member.id if response.message.member else None,
             server_id=server_id,
             permission_mask=response.message.permission_mask,
-            restriction_mask=response.message.restriction_mask
+            restriction_mask=response.message.restriction_mask,
         )
         return access
 
@@ -31,8 +31,12 @@ class MemberService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def join_server(self, server_id: UUID, user_id: UUID, nickname: str, restriction_mask: int):
-        response = await self.member_repository.join_server(server_id, user_id, nickname, restriction_mask)
+    async def join_server(
+        self, server_id: UUID, user_id: UUID, nickname: str, restriction_mask: int
+    ):
+        response = await self.member_repository.join_server(
+            server_id, user_id, nickname, restriction_mask
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
@@ -53,10 +57,18 @@ class MemberService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def update_member(self, access: AccessData, target_member_id: UUID, **kwargs):
+    async def update_member(
+        self,
+        access: AccessData,
+        target_member_id: UUID,
+        name: str | None,
+        server_role_id: UUID | None,
+    ):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.update_member(access, target_member_id, **kwargs)
+        response = await self.member_repository.update_member(
+            access, target_member_id, name, server_role_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
@@ -69,10 +81,14 @@ class MemberService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def migrate_member(self, access: AccessData, origin_member_id: UUID, target_member_id: UUID):
+    async def migrate_member(
+        self, access: AccessData, origin_member_id: UUID, target_member_id: UUID
+    ):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.migrate_member(access, origin_member_id, target_member_id)
+        response = await self.member_repository.migrate_member(
+            access, origin_member_id, target_member_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
@@ -86,23 +102,38 @@ class MemberService:
     async def list_restrictions(self, access: AccessData, target_member_id: UUID):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.list_restrictions(access, target_member_id)
+        response = await self.member_repository.list_restrictions(
+            access, target_member_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def add_restriction(self, access: AccessData, target_member_id: UUID, reason: str, expiration_date: datetime, restriction_id: UUID):
+    async def add_restriction(
+        self,
+        access: AccessData,
+        target_member_id: UUID,
+        reason: str,
+        expiration_date: datetime,
+        restriction_id: UUID,
+    ):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.add_restriction(access, target_member_id, reason, expiration_date, restriction_id)
+        response = await self.member_repository.add_restriction(
+            access, target_member_id, reason, expiration_date, restriction_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def remove_restriction(self, access: AccessData, target_member_id: UUID, member_restriction_id: UUID):
+    async def remove_restriction(
+        self, access: AccessData, target_member_id: UUID, member_restriction_id: UUID
+    ):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.remove_restriction(access, target_member_id, member_restriction_id)
+        response = await self.member_repository.remove_restriction(
+            access, target_member_id, member_restriction_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message

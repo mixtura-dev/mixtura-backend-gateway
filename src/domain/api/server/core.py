@@ -2,6 +2,8 @@ from uuid import UUID
 from fastapi import UploadFile
 from fastapi_controllers import Controller, get, post, put, patch, delete
 
+from ...models.server.roles.response import PermissionResponse
+
 from ....dependency import (
     AuthServiceDependency,
     AuthorizedUserID,
@@ -15,7 +17,6 @@ from ....dependency import (
 )
 from ...models.server.core.request import ServerCreateRequest, ServerUpdateRequest
 from ...models.server.core.response import (
-    PermissionResponse,
     ServerDetailResponse,
     ServerListResponse,
 )

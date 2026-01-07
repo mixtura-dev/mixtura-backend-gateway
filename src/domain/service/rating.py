@@ -21,20 +21,39 @@ class RatingService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def update_rating_set(self, access: AccessData, rating_set_id: UUID, **kwargs):
-        response = await self.rating_repository.update_rating_set(access, rating_set_id, **kwargs)
+    async def update_rating_set(
+        self,
+        access: AccessData,
+        rating_set_id: UUID,
+        name: str | None = None,
+        min_rating: int | None = None,
+        max_rating: int | None = None,
+    ):
+        response = await self.rating_repository.update_rating_set(
+            access, rating_set_id, name, min_rating, max_rating
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def create_rating(self, access: AccessData, rating_set_id: UUID, threshold: int, icon_id: UUID | None):
-        response = await self.rating_repository.create_rating(access, rating_set_id, threshold, icon_id)
+    async def create_rating(
+        self,
+        access: AccessData,
+        rating_set_id: UUID,
+        threshold: int,
+        icon_id: UUID | None,
+    ):
+        response = await self.rating_repository.create_rating(
+            access, rating_set_id, threshold, icon_id
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
     async def update_rating(self, access: AccessData, rating_item_id: UUID, **kwargs):
-        response = await self.rating_repository.update_rating(access, rating_item_id, **kwargs)
+        response = await self.rating_repository.update_rating(
+            access, rating_item_id, **kwargs
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
