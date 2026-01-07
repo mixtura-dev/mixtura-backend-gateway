@@ -3,6 +3,7 @@ from fastapi import UploadFile
 from fastapi_controllers import Controller, get, post, put, patch, delete
 
 from ....dependency import (
+    AuthServiceDependency,
     AuthorizedUserID,
     GameRoleServiceDependency,
     MemberServiceDependency,
@@ -74,10 +75,15 @@ class ServerCoreController(Controller):
 
     @post("/", status_code=201, response_model=ServerDetailResponse)
     async def create_server(
-        self, body: ServerCreateRequest, core_service: ServerCoreServiceDependency
+        self,
+        body: ServerCreateRequest,
+        core_service: ServerCoreServiceDependency,
+        auth_service: AuthServiceDependency,
     ):
+        user_info = await auth_service.get_user(self.user_id)
         new_server = await core_service.create_server(
             user_id=self.user_id,
+            user_name=user_info.username,
             name=body.name,
             public=body.public,
             description=body.description,

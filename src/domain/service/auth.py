@@ -32,6 +32,18 @@ class AuthService:
             raise ServiceException(response.status, response.message.message)
         return response.message
     
+    async def get_user(self, user_id: UUID):
+        response = await self.auth_repository.get_user(user_id)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return response.message
+
+    async def get_users_bulk(self, user_ids: list[UUID]):
+        response = await self.auth_repository.get_users_bulk(user_ids)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return response.message
+
     async def sign_in(self, login: str, password: str):
         response = await self.auth_repository.sign_in(login, password)
         if isinstance(response.message, ErrorResponse):

@@ -22,6 +22,8 @@ from .schemas.request import (
     SignInRequest,
     SignupConfirmRequest,
     TokenRequest,
+    UserBulkRequest,
+    UserRequest,
     UsernameRequest,
     UsernameUpdateRequest,
 )
@@ -59,6 +61,28 @@ class AuthRepository:
             request, queue="auth.get_user_info"
         )
         return ResponseMessage[UserResponse | ErrorResponse].model_validate_json(
+            response.body
+        )
+
+    async def get_user(
+        self, user_id: UUID
+    ) -> ResponseMessage[UserResponse | ErrorResponse]:
+        request = UserRequest(user_id=user_id)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="auth.get_user"
+        )
+        return ResponseMessage[UserResponse | ErrorResponse].model_validate_json(
+            response.body
+        )
+    
+    async def get_users_bulk(
+        self, user_ids: list[UUID]
+    ) -> ResponseMessage[dict[UUID, UserResponse] | ErrorResponse]:
+        request = UserBulkRequest(user_ids=user_ids)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="auth.get_users.bulk"
+        )
+        return ResponseMessage[dict[UUID, UserResponse] | ErrorResponse].model_validate_json(
             response.body
         )
 

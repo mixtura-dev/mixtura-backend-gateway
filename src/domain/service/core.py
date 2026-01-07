@@ -28,6 +28,7 @@ class ServerCoreService:
     async def create_server(
         self,
         user_id: UUID,
+        user_name: str,
         name: str,
         public: bool,
         description: str = "",
@@ -35,7 +36,7 @@ class ServerCoreService:
         role_set_id: UUID | None = None,
     ) -> ServerDetailResponse:
         response = await self.core_repository.create_server(
-            user_id, name, public, description, rating_set_id, role_set_id
+            user_id, user_name, name, public, description, rating_set_id, role_set_id
         )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)

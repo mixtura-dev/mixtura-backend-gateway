@@ -46,6 +46,7 @@ class ServerCoreRepository:
     async def create_server(
         self,
         user_id: UUID,
+        user_name: str,
         name: str,
         public: bool,
         description: str = "",
@@ -54,6 +55,7 @@ class ServerCoreRepository:
     ) -> ResponseMessage[ServerDetailResponse | ErrorResponse]:
         request = ServerCreateRequest(
             user_id=user_id,
+            user_name=user_name,
             name=name,
             public=public,
             description=description,

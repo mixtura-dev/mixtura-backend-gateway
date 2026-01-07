@@ -6,6 +6,7 @@ from ..schemas.member.response import MemberResponse
 from ..schemas.invites.request import (
     GetInviteByKeyRequest,
     GetInviteListRequest,
+    GetUserRestrictionRequest,
     InviteCreateRequest,
     RevokeInviteRequest,
     UseInviteRequest,
@@ -17,6 +18,15 @@ from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
 class InviteRepository:
     def __init__(self, broker: RabbitBroker):
         self.broker = broker
+
+    async def get_user_restriction(
+        self, server_id: UUID, user_id: UUID
+    ) -> ResponseMessage[int | ErrorResponse]:
+        request = GetUserRestrictionRequest(user_id=user_id, server_id=server_id)
+        response: RabbitMessage = await self.broker.request(
+            request, queue="invite.get_restriction"
+        )
+        return ResponseMessage[int | ErrorResponse].model_validate_json(response.body)
 
     async def get_invite_info(
         self, key: str
@@ -44,10 +54,16 @@ class InviteRepository:
         )
 
     async def list_invites(
-        self, access: AccessData, server_id: UUID
+        self, access: AccessData
     ) -> ResponseMessage[list[InviteAdminResponse] | ErrorResponse]:
-        access_data = GetInviteListRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), server_id=server_id)
-        request = GetInviteListRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), server_id=server_id)
+        request = GetInviteListRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            )
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="invite.list"
         )
@@ -58,7 +74,15 @@ class InviteRepository:
     async def create_invite(
         self, access: AccessData, use_limit: int | None = None
     ) -> ResponseMessage[InviteAdminResponse | ErrorResponse]:
-        request = InviteCreateRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), use_limit=use_limit)
+        request = InviteCreateRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
+            use_limit=use_limit,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="invite.create"
         )
@@ -69,7 +93,15 @@ class InviteRepository:
     async def revoke_invite(
         self, access: AccessData, invite_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = RevokeInviteRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), invite_id=invite_id)
+        request = RevokeInviteRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
+            invite_id=invite_id,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="invite.revoke"
         )

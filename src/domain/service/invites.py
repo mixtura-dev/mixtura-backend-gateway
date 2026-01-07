@@ -14,6 +14,12 @@ class InviteService:
     def __init__(self, invite_repository: InviteRepository) -> None:
         self.invite_repository = invite_repository
 
+    async def get_user_restriction(self, server_id: UUID, user_id: UUID) -> int:
+        response = await self.invite_repository.get_user_restriction(server_id, user_id)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return response.message
+
     async def get_invite_info(self, key: str) -> InviteKeyResponse:
         response = await self.invite_repository.get_invite_info(key)
         if isinstance(response.message, ErrorResponse):
@@ -30,13 +36,15 @@ class InviteService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def list_invites(self, access: AccessData, server_id: UUID) -> list[InviteAdminResponse]:
-        response = await self.invite_repository.list_invites(access, server_id)
+    async def list_invites(self, access: AccessData) -> list[InviteAdminResponse]:
+        response = await self.invite_repository.list_invites(access)
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def create_invite(self, access: AccessData, use_limit: int | None = None) -> InviteAdminResponse:
+    async def create_invite(
+        self, access: AccessData, use_limit: int | None = None
+    ) -> InviteAdminResponse:
         response = await self.invite_repository.create_invite(access, use_limit)
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
