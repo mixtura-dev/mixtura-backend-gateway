@@ -358,7 +358,7 @@ class CustomMapper:
 class RemapperService:
     async def _fetch_file_urls(self, file_ids: set[str]) -> dict[str, str]:
         # TODO : implement actual file URL fetching logic
-        return {file_id: f"https://files.example.com/{file_id}" for file_id in file_ids}
+        return {file_id: f"https://static.demogram.ru/mixtura/{file_id}" for file_id in file_ids}
 
     async def map_server_detail_response(
         self, servers: list[CommunicationCoreResponses.ServerDetailResponse]
