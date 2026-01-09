@@ -1,8 +1,8 @@
 from uuid import UUID
 from ..exceptions import ServiceException
 from src.infra.communication.server.repository.games import ServerGameRepository
-from src.infra.communication.server.schemas.response import ErrorResponse
-from src.infra.communication.server.schemas.games.response import GameResponse
+from src.infra.communication.server.models.response import ErrorResponse
+from src.infra.communication.server.models.games.response import GameResponse
 from src.domain.models.access import AccessData
 
 

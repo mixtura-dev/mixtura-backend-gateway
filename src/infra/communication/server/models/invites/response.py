@@ -1,9 +1,8 @@
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
+from src.domain.models.core.response import ServerListResponse
 from ..member.response import MemberResponse, ReducedMemberResponse
-
-from ..core.response import ServerListResponse
 
 
 class InviteAdminResponse(BaseModel):

@@ -1,12 +1,12 @@
 from uuid import UUID
 from ..exceptions import ServiceException
 from src.infra.communication.server.repository.invites import InviteRepository
-from src.infra.communication.server.schemas.response import ErrorResponse
-from src.infra.communication.server.schemas.invites.response import (
+from src.infra.communication.server.models.response import ErrorResponse
+from src.infra.communication.server.models.invites.response import (
     InviteAdminResponse,
     InviteKeyResponse,
 )
-from src.infra.communication.server.schemas.member.response import MemberResponse
+from src.infra.communication.server.models.member.response import MemberResponse
 from src.domain.models.access import AccessData
 
 

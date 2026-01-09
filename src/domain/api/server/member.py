@@ -6,6 +6,7 @@ from ....dependency import (
     AuthorizedUserID,
     InviteServiceDependency,
     MemberServiceDependency,
+    PaginationDependency,
 )
 from src.domain.models.server.member.request import (
     MemberRestrictionCreateRequest,
@@ -33,9 +34,13 @@ class MemberController(Controller):
         self,
         server_id: UUID,
         member_service: MemberServiceDependency,
+        pagination: PaginationDependency,
+        query: str = "",
     ):
         access = await member_service.get_member_by_user(server_id, self.user_id)
-        members = await member_service.list_members(access)
+        members = await member_service.list_members(
+            access, query, pagination.page, pagination.page_size
+        )
         return members
 
     @post("/", response_model=MemberResponse)

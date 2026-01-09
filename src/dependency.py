@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from uuid import UUID
 from fastapi import Cookie, Request, Depends, Response
 
@@ -198,10 +199,13 @@ MemberCustomServiceDependency = Annotated[
     MemberCustomService, Depends(get_member_custom_service)
 ]
 
+
 async def get_remapper_service():
     return RemapperService()
 
+
 RemapperServiceDependency = Annotated[RemapperService, Depends(get_remapper_service)]
+
 
 async def require_auth(
     response: Response,
@@ -219,3 +223,18 @@ async def require_auth(
 
 AuthorizedUserID = Annotated[UUID, Depends(require_auth)]
 
+
+@dataclass
+class PaginationParams:
+    page: int
+    page_size: int
+
+
+async def get_pagination_params(
+    page: int = 1,
+    page_size: int = 50,
+):
+    return PaginationParams(page=page, page_size=page_size)
+
+
+PaginationDependency = Annotated[PaginationParams, Depends(get_pagination_params)]

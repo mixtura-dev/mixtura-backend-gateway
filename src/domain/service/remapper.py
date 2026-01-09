@@ -12,11 +12,11 @@ from ..models.server.game_roles.response import (
 from ..models.server.rating.response import RatingItemResponse, RatingSetResponse
 from ..models.server.games.response import GameResponse
 
-import src.infra.communication.server.schemas.core.response as CommunicationCoreResponses
-import src.infra.communication.server.schemas.games.response as CommunicationGameResponses
-import src.infra.communication.server.schemas.rating.response as CommunicationRatingResponses
-import src.infra.communication.server.schemas.game_roles.response as CommunicationGameRoleResponses
-import src.infra.communication.server.schemas.custom.response as CommunicationCustomResponses
+import src.infra.communication.server.models.core.response as CommunicationCoreResponses
+import src.infra.communication.server.models.games.response as CommunicationGameResponses
+import src.infra.communication.server.models.rating.response as CommunicationRatingResponses
+import src.infra.communication.server.models.game_roles.response as CommunicationGameRoleResponses
+import src.infra.communication.server.models.custom.response as CommunicationCustomResponses
 
 
 @dataclass

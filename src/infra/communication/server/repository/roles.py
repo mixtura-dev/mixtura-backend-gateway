@@ -1,7 +1,7 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
 
-from ..schemas.roles.request import (
+from ..models.roles.request import (
     CreateServerRoleRequest,
     DeleteServerRoleRequest,
     ListServerRolesRequest,
@@ -9,12 +9,12 @@ from ..schemas.roles.request import (
     UpdateServerRoleRequest,
 )
 
-from ..schemas.request import AccessDataRequest
+from ..models.request import AccessDataRequest
 from src.domain.models.access import AccessData
 
-from ..schemas.roles.response import PermissionResponse, ServerRoleResponse
+from ..models.roles.response import PermissionResponse, ServerRoleResponse
 
-from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
+from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class ServerRoleRepository:

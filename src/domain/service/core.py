@@ -1,8 +1,8 @@
 from uuid import UUID
 from ..exceptions import ServiceException
 from src.infra.communication.server.repository.core import ServerCoreRepository
-from src.infra.communication.server.schemas.response import ErrorResponse
-from src.infra.communication.server.schemas.core.response import (
+from src.infra.communication.server.models.response import ErrorResponse
+from src.infra.communication.server.models.core.response import (
     ServerDetailResponse,
     ServerListResponse,
 )

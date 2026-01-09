@@ -1,16 +1,16 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
-from ..schemas.game_roles.request import (
+from ..models.game_roles.request import (
     GameRoleItemCreateRequest,
     GameRoleItemDeleteRequest,
     GameRoleItemUpdateRequest,
     GameRoleSetUpdateRequest,
     GetServerGameRoleSetsRequest,
 )
-from ..schemas.request import AccessDataRequest
+from ..models.request import AccessDataRequest
 from src.domain.models.access import AccessData
-from ..schemas.game_roles.response import GameRoleItemResponse, GameRoleSetResponse
-from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
+from ..models.game_roles.response import GameRoleItemResponse, GameRoleSetResponse
+from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class GameRoleRepository:
@@ -30,7 +30,12 @@ class GameRoleRepository:
     async def get_role_set(
         self, access: AccessData
     ) -> ResponseMessage[GameRoleSetResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = GetServerGameRoleSetsRequest(access_data=access_data)
         response: RabbitMessage = await self.broker.request(
             request, queue="role_set.get_by_server"
@@ -45,7 +50,12 @@ class GameRoleRepository:
         role_set_id: UUID,
         name: str | None = None,
     ) -> ResponseMessage[GameRoleSetResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = GameRoleSetUpdateRequest(
             access_data=access_data, role_set_id=role_set_id, name=name
         )
@@ -66,7 +76,12 @@ class GameRoleRepository:
         hidden: bool = False,
         icon_id: UUID | None = None,
     ) -> ResponseMessage[GameRoleItemResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = GameRoleItemCreateRequest(
             access_data=access_data,
             role_set_id=role_set_id,
@@ -93,7 +108,12 @@ class GameRoleRepository:
         hidden: bool | None = None,
         icon_id: UUID | None = None,
     ) -> ResponseMessage[GameRoleItemResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = GameRoleItemUpdateRequest(
             access_data=access_data,
             role_id=role_id,
@@ -113,7 +133,15 @@ class GameRoleRepository:
     async def delete_role_icon(
         self, access: AccessData, role_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = GameRoleItemDeleteRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), role_id=role_id)
+        request = GameRoleItemDeleteRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
+            role_id=role_id,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="role_set.role.icon.delete"
         )
@@ -124,7 +152,15 @@ class GameRoleRepository:
     async def delete_role(
         self, access: AccessData, role_id: UUID
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
-        request = GameRoleItemDeleteRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask), role_id=role_id)
+        request = GameRoleItemDeleteRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
+            role_id=role_id,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="role_set.role.delete"
         )

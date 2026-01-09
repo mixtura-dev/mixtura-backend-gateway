@@ -1,8 +1,10 @@
 from uuid import UUID
 from datetime import datetime
+
+from ...infra.communication.server.models.request import PaginationRequest
 from ..exceptions import ServiceException
 from src.infra.communication.server.repository.member import MemberRepository
-from src.infra.communication.server.schemas.response import ErrorResponse
+from src.infra.communication.server.models.response import ErrorResponse
 from src.domain.models.access import AccessData
 
 
@@ -23,10 +25,14 @@ class MemberService:
         )
         return access
 
-    async def list_members(self, access: AccessData):
+    async def list_members(
+        self, access: AccessData, nickname_filter: str, page: int, page_size: int
+    ):
         if access.member_id is None:
             raise ServiceException(400, "The user must be a member of the server")
-        response = await self.member_repository.list_members(access)
+        response = await self.member_repository.list_members(
+            access, PaginationRequest(page=page, page_size=page_size), nickname_filter
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message

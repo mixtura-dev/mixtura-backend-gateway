@@ -1,9 +1,9 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
-from ..schemas.request import AccessDataRequest
+from ..models.request import AccessDataRequest
 from src.domain.models.access import AccessData
-from ..schemas.member.response import MemberResponse
-from ..schemas.invites.request import (
+from ..models.member.response import MemberResponse
+from ..models.invites.request import (
     GetInviteByKeyRequest,
     GetInviteListRequest,
     GetUserRestrictionRequest,
@@ -11,8 +11,8 @@ from ..schemas.invites.request import (
     RevokeInviteRequest,
     UseInviteRequest,
 )
-from ..schemas.invites.response import InviteAdminResponse, InviteKeyResponse
-from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
+from ..models.invites.response import InviteAdminResponse, InviteKeyResponse
+from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class InviteRepository:

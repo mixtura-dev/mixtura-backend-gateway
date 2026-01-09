@@ -1,15 +1,15 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
-from ..schemas.rating.request import (
+from ..models.rating.request import (
     GetServerRatingSetsRequest,
     RatingItemCreateRequest,
     RatingItemDeleteRequest,
     RatingItemUpdateRequest,
     RatingSetUpdateRequest,
 )
-from ..schemas.request import AccessDataRequest
-from ..schemas.rating.response import RatingItemResponse, RatingSetResponse
-from ..schemas.response import ErrorResponse, ResponseMessage, StatusResponse
+from ..models.request import AccessDataRequest
+from ..models.rating.response import RatingItemResponse, RatingSetResponse
+from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 from src.domain.models.access import AccessData
 
 
@@ -30,8 +30,14 @@ class RatingRepository:
     async def get_rating_set(
         self, access: AccessData
     ) -> ResponseMessage[RatingSetResponse | ErrorResponse]:
-        access_data = GetServerRatingSetsRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask))
-        request = GetServerRatingSetsRequest(access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask))
+        request = GetServerRatingSetsRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            )
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="rating_set.get_by_server"
         )
@@ -47,7 +53,12 @@ class RatingRepository:
         min_rating: int | None = None,
         max_rating: int | None = None,
     ) -> ResponseMessage[RatingSetResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = RatingSetUpdateRequest(
             access_data=access_data,
             rating_set_id=rating_set_id,
@@ -69,7 +80,12 @@ class RatingRepository:
         threshold: int,
         icon_id: UUID | None,
     ) -> ResponseMessage[RatingItemResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = RatingItemCreateRequest(
             access_data=access_data,
             rating_set_id=rating_set_id,
@@ -90,7 +106,12 @@ class RatingRepository:
         threshold: int | None = None,
         icon_id: UUID | None = None,
     ) -> ResponseMessage[RatingItemResponse | ErrorResponse]:
-        access_data = AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask)
+        access_data = AccessDataRequest(
+            member_id=access.member_id,
+            server_id=access.server_id,
+            permission_mask=access.permission_mask,
+            restriction_mask=access.restriction_mask,
+        )
         request = RatingItemUpdateRequest(
             access_data=access_data,
             rating_item_id=rating_item_id,
@@ -110,7 +131,12 @@ class RatingRepository:
         rating_item_id: UUID,
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = RatingItemDeleteRequest(
-            access_data=AccessDataRequest(member_id=access.member_id, server_id=access.server_id, permission_mask=access.permission_mask, restriction_mask=access.restriction_mask),
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            ),
             rating_item_id=rating_item_id,
         )
         response: RabbitMessage = await self.broker.request(

@@ -91,7 +91,6 @@ class ServerCoreController(Controller):
             rating_set_id=body.rating_set_id,
             role_set_id=body.role_set_id,
         )
-        # TODO : Add games
         return (await self.remapper_service.map_server_detail_response([new_server]))[0]
 
     @get("/{server_id}", response_model=ServerDetailResponse)
