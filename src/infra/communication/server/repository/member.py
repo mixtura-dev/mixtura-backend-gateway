@@ -13,12 +13,14 @@ from ..models.member.request import (
     KickMemberRequest,
     MemberGetInfoRequest,
     MemberMigrationRequest,
+    MemberPermissionRequest,
     MemberUpdateRequest,
     RemoveMemberRestrictionRequest,
     VirtualMemberCreateRequest,
 )
 from ..models.member.response import (
     AccessResponse,
+    MemberPermissionResponse,
     MemberResponse,
     MemberRestrictionResponse,
     RestrictionResponse,
@@ -119,6 +121,24 @@ class MemberRepository:
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
             response.body
         )
+
+    async def get_member_permissions(
+        self, access: AccessData
+    ) -> ResponseMessage[MemberPermissionResponse | ErrorResponse]:
+        request = MemberPermissionRequest(
+            access_data=AccessDataRequest(
+                member_id=access.member_id,
+                server_id=access.server_id,
+                permission_mask=access.permission_mask,
+                restriction_mask=access.restriction_mask,
+            )
+        )
+        response: RabbitMessage = await self.broker.request(
+            request, queue="member.permissions.get"
+        )
+        return ResponseMessage[
+            MemberPermissionResponse | ErrorResponse
+        ].model_validate_json(response.body)
 
     async def update_member(
         self,

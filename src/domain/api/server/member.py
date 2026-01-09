@@ -14,6 +14,7 @@ from src.domain.models.server.member.request import (
     VirtualMemberCreateRequest,
 )
 from src.domain.models.server.member.response import (
+    MemberMeResponse,
     MemberResponse,
     MemberRestrictionResponse,
     ReducedMemberResponse,
@@ -69,7 +70,7 @@ async def create_virtual(
     return member
 
 
-@member_router.get("/me", response_model=MemberResponse)
+@member_router.get("/me", response_model=MemberMeResponse)
 async def get_my_member(
     user_id: AuthorizedUserID,
     server_id: UUID,
@@ -78,8 +79,15 @@ async def get_my_member(
     access = await member_service.get_member_by_user(server_id, user_id)
     if access.member_id is None:
         raise Exception("The user is not a member of the server")
+    permission_info = await member_service.get_member_permissions(access)
     member = await member_service.get_member(access, access.member_id)
-    return member
+    return MemberMeResponse.model_validate(
+        dict(
+            member=member,
+            permissions=permission_info.permissions,
+            restrictions=permission_info.restrictions,
+        )
+    )
 
 
 @member_router.get("/{member_id}", response_model=MemberResponse)

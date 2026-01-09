@@ -63,6 +63,14 @@ class MemberService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
+    async def get_member_permissions(self, access: AccessData):
+        if access.member_id is None:
+            raise ServiceException(400, "The user must be a member of the server")
+        response = await self.member_repository.get_member_permissions(access)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return response.message
+
     async def update_member(
         self,
         access: AccessData,

@@ -41,3 +41,11 @@ class MemberRestrictionResponse(BaseModel):
     reason: str
     expiration_date: datetime
     restriction: RestrictionResponse
+
+
+class MemberMeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    member: MemberResponse
+    permissions: list[str]
+    restrictions: list[MemberRestrictionResponse]
