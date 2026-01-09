@@ -21,7 +21,7 @@ from src.domain.models.server.member.response import (
 from src.domain.models.response import StatusResponse
 
 member_router = APIRouter(
-    prefix="/servers/{server_id}/members",
+    prefix="/{server_id}/members",
     tags=["Member"],
 )
 
