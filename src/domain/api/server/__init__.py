@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .member_custom import MemberCustomController
-from .member import MemberController
+from .member import member_router
 from .core import ServerCoreController
 from .game_role import ServerGameRoleController
 from .game import ServerGameController
@@ -19,5 +19,5 @@ router.include_router(ServerGameController.create_router())
 router.include_router(ServerGameRoleController.create_router())
 router.include_router(ServerRatingController.create_router())
 router.include_router(MemberCustomController.create_router())
-router.include_router(MemberController.create_router())
+router.include_router(member_router)
 router.include_router(ServerRoleController.create_router())
