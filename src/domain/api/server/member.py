@@ -71,6 +71,18 @@ class MemberController(Controller):
         member = await member_service.create_virtual(access, body.nickname)
         return member
 
+    @get("/me", response_model=MemberResponse)
+    async def get_my_member(
+        self,
+        server_id: UUID,
+        member_service: MemberServiceDependency,
+    ):
+        access = await member_service.get_member_by_user(server_id, self.user_id)
+        if access.member_id is None:
+            raise Exception("The user is not a member of the server")
+        member = await member_service.get_member(access, access.member_id)
+        return member
+
     @get("/{member_id}", response_model=MemberResponse)
     async def get_member(
         self,
