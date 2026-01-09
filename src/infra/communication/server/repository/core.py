@@ -2,11 +2,12 @@ from uuid import UUID
 
 from faststream.rabbit import RabbitBroker, RabbitMessage
 
-from ..models.request import AccessDataRequest
+from ..models.request import AccessDataRequest, PaginationRequest
 from src.domain.models.access import AccessData
 
 from ..models.core.request import (
-    GetUseServersRequest,
+    GetPublicServersRequest,
+    GetUserServersRequest,
     ServerCreateRequest,
     ServerDeleteRequest,
     ServerGetRequest,
@@ -23,19 +24,27 @@ class ServerCoreRepository:
         self.broker = broker
 
     async def get_public_servers(
-        self,
+        self, page: int, page_size: int, name_filter: str = ""
     ) -> ResponseMessage[list[ServerListResponse] | ErrorResponse]:
+        request = GetPublicServersRequest(
+            pagination=PaginationRequest(page=page, page_size=page_size),
+            name_filter=name_filter,
+        )
         response: RabbitMessage = await self.broker.request(
-            None, queue="server.public_server_list"
+            request, queue="server.public_server_list"
         )
         return ResponseMessage[
             list[ServerListResponse] | ErrorResponse
         ].model_validate_json(response.body)
 
     async def get_user_servers(
-        self, user_id: UUID
+        self, user_id: UUID, page: int, page_size: int, name_filter: str = ""
     ) -> ResponseMessage[list[ServerListResponse] | ErrorResponse]:
-        request = GetUseServersRequest(user_id=user_id)
+        request = GetUserServersRequest(
+            user_id=user_id,
+            pagination=PaginationRequest(page=page, page_size=page_size),
+            name_filter=name_filter,
+        )
         response: RabbitMessage = await self.broker.request(
             request, queue="server.user_server_list"
         )

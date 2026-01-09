@@ -9,6 +9,7 @@ from ....dependency import (
     AuthorizedUserID,
     GameRoleServiceDependency,
     MemberServiceDependency,
+    PaginationDependency,
     RatingServiceDependency,
     RemapperServiceDependency,
     ServerCoreServiceDependency,
@@ -65,13 +66,27 @@ class ServerCoreController(Controller):
         return await self.remapper_service.map_games_response(games)
 
     @get("/list/public", response_model=list[ServerListResponse])
-    async def list_public_servers(self, core_service: ServerCoreServiceDependency):
-        servers = await core_service.get_public_servers()
+    async def list_public_servers(
+        self,
+        core_service: ServerCoreServiceDependency,
+        pagination: PaginationDependency,
+        query: str = "",
+    ):
+        servers = await core_service.get_public_servers(
+            pagination.page, pagination.page_size, query
+        )
         return await self.remapper_service.map_server_list_response(servers)
 
     @get("/list/user", response_model=list[ServerListResponse])
-    async def list_user_servers(self, core_service: ServerCoreServiceDependency):
-        servers = await core_service.get_user_servers(self.user_id)
+    async def list_user_servers(
+        self,
+        core_service: ServerCoreServiceDependency,
+        pagination: PaginationDependency,
+        query: str = "",
+    ):
+        servers = await core_service.get_user_servers(
+            self.user_id, pagination.page, pagination.page_size, query
+        )
         return await self.remapper_service.map_server_list_response(servers)
 
     @post("/", status_code=201, response_model=ServerDetailResponse)

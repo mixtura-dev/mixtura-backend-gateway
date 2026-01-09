@@ -13,14 +13,22 @@ class ServerCoreService:
     def __init__(self, core_repository: ServerCoreRepository) -> None:
         self.core_repository = core_repository
 
-    async def get_public_servers(self) -> list[ServerListResponse]:
-        response = await self.core_repository.get_public_servers()
+    async def get_public_servers(
+        self, page: int, page_size: int, name_filter: str = ""
+    ) -> list[ServerListResponse]:
+        response = await self.core_repository.get_public_servers(
+            page, page_size, name_filter
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def get_user_servers(self, user_id: UUID) -> list[ServerListResponse]:
-        response = await self.core_repository.get_user_servers(user_id)
+    async def get_user_servers(
+        self, user_id: UUID, page: int, page_size: int, name_filter: str = ""
+    ) -> list[ServerListResponse]:
+        response = await self.core_repository.get_user_servers(
+            user_id, page, page_size, name_filter
+        )
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return response.message
