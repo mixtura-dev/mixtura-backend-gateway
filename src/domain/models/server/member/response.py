@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
-from ..roles.response import ServerRoleResponse
+from ..roles.response import PermissionResponse, ServerRoleResponse
 
 
 # class ServerPermissionResponse(BaseModel):
@@ -47,5 +47,5 @@ class MemberMeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     member: MemberResponse
-    permissions: list[str]
+    permissions: list[PermissionResponse]
     restrictions: list[MemberRestrictionResponse]
