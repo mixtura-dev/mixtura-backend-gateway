@@ -23,6 +23,7 @@ class RabbitConfig(LocalSettings):
     user: str = Field(default="guest", alias="RABBITMQ_USER")
     password: str = Field(default="guest", alias="RABBITMQ_PASSWORD")
     vhost: str = Field(default="/", alias="RABBITMQ_VHOST")
+    request_timeout: int = Field(default=30, alias="RABBITMQ_REQUEST_TIMEOUT")
 
     @property
     def url(self) -> str:

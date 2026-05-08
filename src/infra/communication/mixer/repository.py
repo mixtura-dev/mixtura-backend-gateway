@@ -1,6 +1,8 @@
 from uuid import UUID
 
 from faststream.rabbit import RabbitBroker, RabbitMessage
+
+from src.infra.communication.rpc import rpc_request
 from pydantic import BaseModel
 
 from src.domain.models.access import AccessData
@@ -64,7 +66,7 @@ class MixerEventRepository:
         )
 
     async def health(self) -> ResponseMessage[ErrorResponse | StatusResponse]:
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             HealthRequest(), queue="event.health"
         )
         return ResponseMessage[ErrorResponse | StatusResponse].model_validate_json(
@@ -79,7 +81,7 @@ class MixerEventRepository:
         request = CreateEventRequest(
             access_data=self._access_data(access), **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.create"
         )
         return ResponseMessage[ErrorResponse | EventCard].model_validate_json(
@@ -90,7 +92,7 @@ class MixerEventRepository:
         self, access: AccessData, event_id: UUID
     ) -> ResponseMessage[ErrorResponse | EventCard | EventDetail]:
         request = GetEventRequest(event_id=event_id, access_data=self._access_data(access))
-        response: RabbitMessage = await self.broker.request(request, queue="event.get")
+        response: RabbitMessage = await rpc_request(self.broker, request, queue="event.get")
         return ResponseMessage[
             ErrorResponse | EventCard | EventDetail
         ].model_validate_json(response.body)
@@ -99,7 +101,7 @@ class MixerEventRepository:
         self, server_id: UUID, pagination: PaginationRequest
     ) -> ResponseMessage[ErrorResponse | list[EventCard]]:
         request = ListEventsRequest(server_id=server_id, pagination=pagination)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.list_public"
         )
         return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(
@@ -112,7 +114,7 @@ class MixerEventRepository:
         request = ListEventsRequest(
             access_data=self._access_data(access), pagination=pagination
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.list_private"
         )
         return ResponseMessage[ErrorResponse | list[EventDetail]].model_validate_json(
@@ -130,7 +132,7 @@ class MixerEventRepository:
             event_id=event_id,
             **body.model_dump(exclude_unset=True),
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.update"
         )
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
@@ -143,7 +145,7 @@ class MixerEventRepository:
         request = ActivateEventRequest(
             access_data=self._access_data(access), event_id=event_id
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.activate"
         )
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
@@ -156,7 +158,7 @@ class MixerEventRepository:
         request = OpenRegistrationRequest(
             access_data=self._access_data(access), event_id=event_id
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.registration.open"
         )
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
@@ -169,7 +171,7 @@ class MixerEventRepository:
         request = CloseRegistrationRequest(
             access_data=self._access_data(access), event_id=event_id
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.registration.close"
         )
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
@@ -182,7 +184,7 @@ class MixerEventRepository:
         request = CancelEventRequest(
             access_data=self._access_data(access), event_id=event_id
         )
-        response: RabbitMessage = await self.broker.request(request, queue="event.cancel")
+        response: RabbitMessage = await rpc_request(self.broker, request, queue="event.cancel")
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
             response.body
         )
@@ -193,7 +195,7 @@ class MixerEventRepository:
         request = CompleteEventRequest(
             access_data=self._access_data(access), event_id=event_id
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.complete"
         )
         return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
@@ -208,7 +210,7 @@ class MixerEventRepository:
             access_data=self._access_data(access),
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.organizer.list"
         )
         return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
@@ -223,7 +225,7 @@ class MixerEventRepository:
             event_id=event_id,
             member_id=member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.organizer.add"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -236,7 +238,7 @@ class MixerEventRepository:
             event_id=event_id,
             member_id=member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.organizer.remove"
         )
         return ResponseMessage[ErrorResponse | StatusResponse].model_validate_json(
@@ -252,7 +254,7 @@ class MixerEventRepository:
         request = SubmitApplicationRequest(
             access_data=self._access_data(access), event_id=event_id, **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.application.submit"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -263,7 +265,7 @@ class MixerEventRepository:
         request = GetApplicationRequest(
             application_id=application_id, access_data=self._access_data(access)
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.application.get"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -281,7 +283,7 @@ class MixerEventRepository:
             status=status,
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.application.list"
         )
         return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
@@ -299,7 +301,7 @@ class MixerEventRepository:
             application_id=application_id,
             **body.model_dump(),
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.application.review"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -317,7 +319,7 @@ class MixerEventRepository:
             status=status,
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.player.list"
         )
         return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
@@ -337,7 +339,7 @@ class MixerEventRepository:
             member_id=member_id,
             **body.model_dump(),
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.player.status.update"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -350,7 +352,7 @@ class MixerEventRepository:
             event_id=event_id,
             member_id=member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.player.remove"
         )
         return ResponseMessage[ErrorResponse | StatusResponse].model_validate_json(
@@ -363,7 +365,7 @@ class MixerEventRepository:
         request = CreateDraftRequest(
             access_data=self._access_data(access), event_id=event_id, **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.draft.create"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -372,7 +374,7 @@ class MixerEventRepository:
         self, access: AccessData, draft_id: UUID
     ) -> ResponseMessage[ErrorResponse | dict]:
         request = GetDraftRequest(draft_id=draft_id, access_data=self._access_data(access))
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.draft.get"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -385,7 +387,7 @@ class MixerEventRepository:
             access_data=self._access_data(access),
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.draft.list"
         )
         return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
@@ -398,7 +400,7 @@ class MixerEventRepository:
         request = RunTeamFormationRequest(
             access_data=self._access_data(access), draft_id=draft_id, **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.team_formation.run"
         )
         return ResponseMessage[ErrorResponse | TeamFormationJob].model_validate_json(
@@ -413,7 +415,7 @@ class MixerEventRepository:
             access_data=self._access_data(access),
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.team_formation.get"
         )
         return ResponseMessage[ErrorResponse | TeamFormationJob].model_validate_json(
@@ -428,7 +430,7 @@ class MixerEventRepository:
             draft_id=draft_id,
             variant_id=variant_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.team_formation.choose"
         )
         return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
@@ -441,7 +443,7 @@ class MixerEventRepository:
             access_data=self._access_data(access),
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.team.list"
         )
         return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
@@ -454,7 +456,7 @@ class MixerEventRepository:
         request = SetupMatchRequest(
             access_data=self._access_data(access), event_id=event_id, **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.match.setup"
         )
         return ResponseMessage[ErrorResponse | SingleMatchView].model_validate_json(
@@ -467,7 +469,7 @@ class MixerEventRepository:
         request = RecordMatchResultRequest(
             access_data=self._access_data(access), match_id=match_id, **body.model_dump()
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.match.result.record"
         )
         return ResponseMessage[
@@ -478,7 +480,7 @@ class MixerEventRepository:
         self, access: AccessData, match_id: UUID
     ) -> ResponseMessage[ErrorResponse | SingleMatchView]:
         request = GetMatchRequest(match_id=match_id, access_data=self._access_data(access))
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.match.get"
         )
         return ResponseMessage[ErrorResponse | SingleMatchView].model_validate_json(
@@ -498,7 +500,7 @@ class MixerEventRepository:
             active=active,
             pagination=pagination,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.match.list"
         )
         return ResponseMessage[

@@ -3,6 +3,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_409_CONFLICT,
     HTTP_500_INTERNAL_SERVER_ERROR,
+    HTTP_503_SERVICE_UNAVAILABLE,
 )
 
 
@@ -34,4 +35,12 @@ class InternalLogicException(HTTPException):
         super().__init__(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"status": "error", "message": message},
+        )
+
+
+class RabbitTimeoutException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"status": "error", "message": "Service is temporarily unavailable"},
         )

@@ -2,6 +2,8 @@ from uuid import UUID
 from datetime import datetime
 
 from faststream.rabbit import RabbitBroker, RabbitMessage
+
+from src.infra.communication.rpc import rpc_request
 from ..models.request import AccessDataRequest, PaginationRequest
 from src.domain.models.access import AccessData
 from ..models.member.request import (
@@ -36,7 +38,7 @@ class MemberRepository:
         self, server_id: UUID, user_id: UUID
     ) -> ResponseMessage[AccessResponse | ErrorResponse]:
         request = GetMemberByUserRequest(server_id=server_id, user_id=user_id)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.by_user"
         )
         return ResponseMessage[AccessResponse | ErrorResponse].model_validate_json(
@@ -59,7 +61,7 @@ class MemberRepository:
             pagination=pagination,
             nickname_filter=nickname_filter,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.list"
         )
         return ResponseMessage[
@@ -79,7 +81,7 @@ class MemberRepository:
             nickname=nickname,
             restriction_mask=restriction_mask,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.join"
         )
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
@@ -98,7 +100,7 @@ class MemberRepository:
             ),
             nickname=nickname,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.virtual.create"
         )
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
@@ -117,7 +119,7 @@ class MemberRepository:
             ),
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(request, queue="member.get")
+        response: RabbitMessage = await rpc_request(self.broker, request, queue="member.get")
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
             response.body
         )
@@ -133,7 +135,7 @@ class MemberRepository:
                 restriction_mask=access.restriction_mask,
             )
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.permissions.get"
         )
         return ResponseMessage[
@@ -158,7 +160,7 @@ class MemberRepository:
             name=name,
             server_role_id=server_role_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.update"
         )
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
@@ -177,7 +179,7 @@ class MemberRepository:
             ),
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.kick"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -200,7 +202,7 @@ class MemberRepository:
             origin_member_id=origin_member_id,
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.virtual.migrate"
         )
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
@@ -210,7 +212,7 @@ class MemberRepository:
     async def get_global_restrictions(
         self,
     ) -> ResponseMessage[list[RestrictionResponse] | ErrorResponse]:
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             None, queue="server.global.restrictions"
         )
         return ResponseMessage[
@@ -229,7 +231,7 @@ class MemberRepository:
             ),
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.restriction.list"
         )
         return ResponseMessage[
@@ -256,7 +258,7 @@ class MemberRepository:
             expiration_date=expiration_date,
             restriction_id=restriction_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.restriction.add"
         )
         return ResponseMessage[
@@ -279,7 +281,7 @@ class MemberRepository:
             target_member_id=target_member_id,
             member_restriction_id=member_restriction_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="member.restriction.remove"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

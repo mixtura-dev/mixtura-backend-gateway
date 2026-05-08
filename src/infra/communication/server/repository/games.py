@@ -1,6 +1,8 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rpc import rpc_request
+
 from ..models.games.request import (
     GameAddRequest,
     GameRemoveRequest,
@@ -20,7 +22,7 @@ class ServerGameRepository:
     async def get_global_games(
         self,
     ) -> ResponseMessage[list[GameResponse] | ErrorResponse]:
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             None, queue="server.global.games"
         )
         return ResponseMessage[list[GameResponse] | ErrorResponse].model_validate_json(
@@ -37,7 +39,7 @@ class ServerGameRepository:
             restriction_mask=access.restriction_mask,
         )
         request = GameAddRequest(access_data=access_data, game_ids=game_ids)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="game.server.add"
         )
         return ResponseMessage[list[GameResponse] | ErrorResponse].model_validate_json(
@@ -54,7 +56,7 @@ class ServerGameRepository:
             restriction_mask=access.restriction_mask,
         )
         request = GameRemoveRequest(access_data=access_data, game_id=game_id)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="game.server.remove"
         )
         return ResponseMessage[list[GameResponse] | ErrorResponse].model_validate_json(
@@ -71,7 +73,7 @@ class ServerGameRepository:
             restriction_mask=access.restriction_mask,
         )
         request = GameSetRequest(access_data=access_data, game_ids=game_ids)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="game.server.set"
         )
         return ResponseMessage[list[GameResponse] | ErrorResponse].model_validate_json(
@@ -88,7 +90,7 @@ class ServerGameRepository:
             restriction_mask=access.restriction_mask,
         )
         request = GetServerGameListRequest(access_data=access_data)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="game.server.list"
         )
         return ResponseMessage[list[GameResponse] | ErrorResponse].model_validate_json(

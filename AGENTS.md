@@ -12,7 +12,7 @@
 - `start.py` serves `src.domain:app` with `reload=False`; app wiring is in `src/domain/main.py`.
 - FastAPI docs are at `/api/docs`; OpenAPI is `/api/openapi.json`; HTTP routes are under `/api`, mainly `/api/auth` and `/api/server`.
 - Runtime config comes from environment variables defined in `src/env_config.py`; no env file is configured.
-- Supported env vars are `SERVER_HOST`, `SERVER_PORT`, `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `RABBITMQ_VHOST`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, and `REDIS_PASSWORD`.
+- Supported env vars are `SERVER_HOST`, `SERVER_PORT`, `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `RABBITMQ_VHOST`, `RABBITMQ_REQUEST_TIMEOUT`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, and `REDIS_PASSWORD`.
 - Local defaults target RabbitMQ at `localhost:5672` (`guest`/`guest`, vhost `/`) and Redis at `localhost:6379`; integration work needs those services and backend consumers for the RPC queues.
 
 ## Architecture

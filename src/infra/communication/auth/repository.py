@@ -1,6 +1,8 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rpc import rpc_request
+
 from .schemas.response import (
     BusyResponse,
     ErrorResponse,
@@ -35,7 +37,7 @@ class AuthRepository:
 
     async def providers(self) -> ResponseMessage[ProvidersResponse | ErrorResponse]:
         request = None
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.providers"
         )
         return ResponseMessage[ProvidersResponse | ErrorResponse].model_validate_json(
@@ -46,7 +48,7 @@ class AuthRepository:
         self, token: str
     ) -> ResponseMessage[AuthCheckResponse | ErrorResponse]:
         request = TokenRequest(token=token)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.get_auth_check"
         )
         return ResponseMessage[AuthCheckResponse | ErrorResponse].model_validate_json(
@@ -57,7 +59,7 @@ class AuthRepository:
         self, token: str
     ) -> ResponseMessage[UserResponse | ErrorResponse]:
         request = TokenRequest(token=token)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.get_user_info"
         )
         return ResponseMessage[UserResponse | ErrorResponse].model_validate_json(
@@ -68,7 +70,7 @@ class AuthRepository:
         self, user_id: UUID
     ) -> ResponseMessage[UserResponse | ErrorResponse]:
         request = UserRequest(user_id=user_id)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.get_user"
         )
         return ResponseMessage[UserResponse | ErrorResponse].model_validate_json(
@@ -79,7 +81,7 @@ class AuthRepository:
         self, user_ids: list[UUID]
     ) -> ResponseMessage[dict[UUID, UserResponse] | ErrorResponse]:
         request = UserBulkRequest(user_ids=user_ids)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.get_users.bulk"
         )
         return ResponseMessage[dict[UUID, UserResponse] | ErrorResponse].model_validate_json(
@@ -90,7 +92,7 @@ class AuthRepository:
         self, login: str, password: str
     ) -> ResponseMessage[TokenResponse | ErrorResponse]:
         request = SignInRequest(login=login, password=password)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.signin"
         )
         return ResponseMessage[TokenResponse | ErrorResponse].model_validate_json(
@@ -101,7 +103,7 @@ class AuthRepository:
         self, username: str, user_id: UUID
     ) -> ResponseMessage[UpdateResponse | ErrorResponse]:
         request = UsernameUpdateRequest(username=username, user_id=user_id)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.update_username"
         )
         return ResponseMessage[UpdateResponse | ErrorResponse].model_validate_json(
@@ -112,7 +114,7 @@ class AuthRepository:
         self, token: str
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = TokenRequest(token=token)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.signout"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -123,7 +125,7 @@ class AuthRepository:
         self, email: str
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = EmailRequest(email=email)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.signup"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -134,7 +136,7 @@ class AuthRepository:
         self, email: str, token: str
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = EmailVerifyRequest(email=email, token=token)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.signup.verify"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -151,7 +153,7 @@ class AuthRepository:
             username=username,
             repeat_password=repeat_password,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.signup.confirm"
         )
         return ResponseMessage[
@@ -162,7 +164,7 @@ class AuthRepository:
         self, email: str
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = EmailRequest(email=email)
-        response: RabbitMessage = await self.broker.request(request, queue="auth.reset")
+        response: RabbitMessage = await rpc_request(self.broker, request, queue="auth.reset")
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
             response.body
         )
@@ -171,7 +173,7 @@ class AuthRepository:
         self, email: str, token: str
     ) -> ResponseMessage[StatusResponse | ErrorResponse]:
         request = EmailVerifyRequest(email=email, token=token)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.reset.verify"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -193,7 +195,7 @@ class AuthRepository:
             repeat_password=repeat_password,
             auth_token=auth_token,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.reset.confirm"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -204,7 +206,7 @@ class AuthRepository:
         self, username: str
     ) -> ResponseMessage[BusyResponse | ErrorResponse]:
         request = UsernameRequest(username=username)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.check_username"
         )
         return ResponseMessage[BusyResponse | ErrorResponse].model_validate_json(
@@ -215,7 +217,7 @@ class AuthRepository:
         self, provider: str, code: str, user_id: UUID | None
     ) -> ResponseMessage[StatusResponse | TokenResponse | ErrorResponse]:
         request = OAuthConfirmRequest(provider=provider, code=code, user_id=user_id)
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="auth.callback"
         )
         return ResponseMessage[

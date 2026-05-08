@@ -1,5 +1,7 @@
 from uuid import UUID
 from faststream.rabbit import RabbitBroker, RabbitMessage
+
+from src.infra.communication.rpc import rpc_request
 from ..models.custom.request import (
     CreateCustomRequest,
     DeleteCustomRequest,
@@ -28,7 +30,7 @@ class MemberCustomRepository:
             ),
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="custom.get_by_member"
         )
         return ResponseMessage[
@@ -47,7 +49,7 @@ class MemberCustomRepository:
             ),
             target_member_id=target_member_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="custom.create"
         )
         return ResponseMessage[CustomResponse | ErrorResponse].model_validate_json(
@@ -66,7 +68,7 @@ class MemberCustomRepository:
             ),
             custom_id=custom_id,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="custom.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -91,7 +93,7 @@ class MemberCustomRepository:
             game_role_id=game_role_id,
             rating=rating,
         )
-        response: RabbitMessage = await self.broker.request(
+        response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="custom.rating.set"
         )
         return ResponseMessage[CustomResponse | ErrorResponse].model_validate_json(
