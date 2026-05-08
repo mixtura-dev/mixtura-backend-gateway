@@ -10,12 +10,6 @@ class EventMatchType(str, Enum):
     TOURNAMENT = "TOURNAMENT"
 
 
-class RegistrationType(str, Enum):
-    FREE = "FREE"
-    APPLICATION = "APPLICATION"
-    INVITE = "INVITE"
-
-
 class EventStatus(str, Enum):
     CREATED = "CREATED"
     REGISTRATION = "REGISTRATION"
@@ -34,10 +28,10 @@ class TeamFormation(str, Enum):
 
 class EventCardResponse(BaseModel):
     id: UUID
+    name: str
     match_type: EventMatchType
     is_public: bool
     team_size: int
-    registration_type: RegistrationType
     team_formation: TeamFormation
     status: EventStatus
     server_id: UUID
@@ -45,11 +39,11 @@ class EventCardResponse(BaseModel):
 
 class EventDetailResponse(BaseModel):
     id: UUID
+    name: str
     match_type: EventMatchType
     use_application: bool
     is_public: bool
     team_size: int
-    registration_type: RegistrationType
     team_formation: TeamFormation
     status: EventStatus
     allow_multiple_drafts: bool

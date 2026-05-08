@@ -211,8 +211,13 @@ MemberCustomServiceDependency = Annotated[
 ]
 
 
-async def get_mixer_event_service(event_repo: MixerEventRepositoryDependency):
-    return MixerEventService(event_repo)
+async def get_mixer_event_service(
+    event_repo: MixerEventRepositoryDependency,
+    rating_repo: RatingRepositoryDependency,
+    member_repo: MemberRepositoryDependency,
+    game_role_repo: GameRoleRepositoryDependency,
+):
+    return MixerEventService(event_repo, rating_repo, member_repo, game_role_repo)
 
 
 MixerEventServiceDependency = Annotated[
