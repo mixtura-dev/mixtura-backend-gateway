@@ -3,12 +3,14 @@ from uuid import UUID
 from fastapi import Cookie, Request, Depends, Response
 
 from .domain.service.remapper import RemapperService
+from .domain.service.mixer import MixerEventService
 
 from .domain.exceptions import ServiceException
 
 from .domain.service.auth import AuthService
 
 from .infra.communication.auth.repository import AuthRepository
+from .infra.communication.mixer.repository import MixerEventRepository
 from .infra.communication.server.repository import (
     ServerCoreRepository,
     ServerGameRepository,
@@ -60,6 +62,15 @@ async def get_auth_repository(broker=Depends(get_broker)):
 
 
 AuthRepositoryDependency = Annotated[AuthRepository, Depends(get_auth_repository)]
+
+
+async def get_mixer_event_repository(broker=Depends(get_broker)):
+    return MixerEventRepository(broker)
+
+
+MixerEventRepositoryDependency = Annotated[
+    MixerEventRepository, Depends(get_mixer_event_repository)
+]
 
 
 async def get_auth_service(auth_repository: AuthRepositoryDependency):
@@ -197,6 +208,15 @@ async def get_member_custom_service(custom_repo: MemberCustomRepositoryDependenc
 
 MemberCustomServiceDependency = Annotated[
     MemberCustomService, Depends(get_member_custom_service)
+]
+
+
+async def get_mixer_event_service(event_repo: MixerEventRepositoryDependency):
+    return MixerEventService(event_repo)
+
+
+MixerEventServiceDependency = Annotated[
+    MixerEventService, Depends(get_mixer_event_service)
 ]
 
 

@@ -8,4 +8,4 @@ logger = logging.getLogger(__name__)
 logger.info("Starting uvicorn server on %s:%s", env.server.host, env.server.port)
 
 if __name__ == '__main__':
-    uvicorn.run("src.domain:app", host=env.server.host, port=env.server.port, reload=False, log_config=None)
+    uvicorn.run("src.domain:app", host=env.server.host, port=env.server.port, reload=True, log_config=None, reload_includes=["src/"])
