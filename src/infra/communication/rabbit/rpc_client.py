@@ -242,7 +242,7 @@ class RabbitRpcClient:
         import json
 
         if hasattr(payload, "model_dump"):
-            return json.dumps(payload.model_dump(exclude_none=True)).encode("utf-8")
+            return json.dumps(payload.model_dump(mode="json", exclude_none=True)).encode("utf-8")
         if hasattr(payload, "dict"):
             return json.dumps(payload.dict()).encode("utf-8")
         return json.dumps(payload).encode("utf-8")
