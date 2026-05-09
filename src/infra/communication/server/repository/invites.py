@@ -1,6 +1,6 @@
 from uuid import UUID
-from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rabbit import RabbitRpcClient
 from src.infra.communication.rpc import rpc_request
 from ..models.request import AccessDataRequest
 from src.domain.models.access import AccessData
@@ -18,14 +18,14 @@ from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class InviteRepository:
-    def __init__(self, broker: RabbitBroker):
-        self.broker = broker
+    def __init__(self, rpc_client: RabbitRpcClient):
+        self.rpc_client = rpc_client
 
     async def get_user_restriction(
         self, server_id: UUID, user_id: UUID
     ) -> ResponseMessage[int | ErrorResponse]:
         request = GetUserRestrictionRequest(user_id=user_id, server_id=server_id)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="invite.get_restriction"
         )
         return ResponseMessage[int | ErrorResponse].model_validate_json(response.body)
@@ -34,7 +34,7 @@ class InviteRepository:
         self, key: str
     ) -> ResponseMessage[InviteKeyResponse | ErrorResponse]:
         request = GetInviteByKeyRequest(key=key)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="invite.get_by_key"
         )
         return ResponseMessage[InviteKeyResponse | ErrorResponse].model_validate_json(
@@ -50,7 +50,7 @@ class InviteRepository:
             nickname=nickname,
             restriction_mask=restriction_mask,
         )
-        response: RabbitMessage = await rpc_request(self.broker, request, queue="invite.use")
+        response = await rpc_request(self.rpc_client, request, queue="invite.use")
         return ResponseMessage[MemberResponse | ErrorResponse].model_validate_json(
             response.body
         )
@@ -66,7 +66,7 @@ class InviteRepository:
                 restriction_mask=access.restriction_mask,
             )
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="invite.list"
         )
         return ResponseMessage[
@@ -85,7 +85,7 @@ class InviteRepository:
             ),
             use_limit=use_limit,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="invite.create"
         )
         return ResponseMessage[InviteAdminResponse | ErrorResponse].model_validate_json(
@@ -104,7 +104,7 @@ class InviteRepository:
             ),
             invite_id=invite_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="invite.revoke"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

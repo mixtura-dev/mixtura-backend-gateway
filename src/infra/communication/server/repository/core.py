@@ -1,7 +1,6 @@
 from uuid import UUID
 
-from faststream.rabbit import RabbitBroker, RabbitMessage
-
+from src.infra.communication.rabbit import RabbitRpcClient
 from src.infra.communication.rpc import rpc_request
 
 from ..models.request import AccessDataRequest, PaginationRequest
@@ -22,8 +21,8 @@ from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class ServerCoreRepository:
-    def __init__(self, broker: RabbitBroker):
-        self.broker = broker
+    def __init__(self, rpc_client: RabbitRpcClient):
+        self.rpc_client = rpc_client
 
     async def get_public_servers(
         self, page: int, page_size: int, name_filter: str = ""
@@ -32,7 +31,7 @@ class ServerCoreRepository:
             pagination=PaginationRequest(page=page, page_size=page_size),
             name_filter=name_filter,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.public_server_list"
         )
         return ResponseMessage[
@@ -47,7 +46,7 @@ class ServerCoreRepository:
             pagination=PaginationRequest(page=page, page_size=page_size),
             name_filter=name_filter,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.user_server_list"
         )
         return ResponseMessage[
@@ -73,7 +72,7 @@ class ServerCoreRepository:
             rating_set_id=rating_set_id,
             role_set_id=role_set_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.create"
         )
         return ResponseMessage[
@@ -90,7 +89,7 @@ class ServerCoreRepository:
             restriction_mask=access.restriction_mask,
         )
         request = ServerGetRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.get_info"
         )
         return ResponseMessage[
@@ -120,7 +119,7 @@ class ServerCoreRepository:
             banner_id=banner_id,
             icon_id=icon_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.update"
         )
         return ResponseMessage[
@@ -137,7 +136,7 @@ class ServerCoreRepository:
             restriction_mask=access.restriction_mask,
         )
         request = ServerDeleteRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.banner.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -154,7 +153,7 @@ class ServerCoreRepository:
             restriction_mask=access.restriction_mask,
         )
         request = ServerDeleteRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.icon.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -171,7 +170,7 @@ class ServerCoreRepository:
             restriction_mask=access.restriction_mask,
         )
         request = ServerDeleteRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

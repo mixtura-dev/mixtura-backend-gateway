@@ -22,6 +22,7 @@ from .infra.communication.server.repository import (
     MemberCustomRepository,
 )
 
+from .infra.communication.rabbit import RabbitRpcClient
 
 from .domain.service.core import ServerCoreService
 from .domain.service.games import ServerGamesService
@@ -49,23 +50,29 @@ async def get_redis_session(request: Request):
         yield redis
 
 
-async def get_broker(request: Request):
-    return request.app.state.rabbit_router.broker
+async def get_rpc_client(request: Request):
+    if not hasattr(request.app.state, "rpc_client"):
+        logger.error("rpc_client not found in app.state")
+        raise RuntimeError("RabbitRpcClient not configured")
+    return request.app.state.rpc_client
+
+
+RpcClientDependency = Annotated[RabbitRpcClient, Depends(get_rpc_client)]
 
 
 async def get_redis_repository(redis: Annotated[Redis, Depends(get_redis_session)]):
     return RedisRepository(redis)
 
 
-async def get_auth_repository(broker=Depends(get_broker)):
-    return AuthRepository(broker)
+async def get_auth_repository(rpc_client: RpcClientDependency):
+    return AuthRepository(rpc_client)
 
 
 AuthRepositoryDependency = Annotated[AuthRepository, Depends(get_auth_repository)]
 
 
-async def get_mixer_event_repository(broker=Depends(get_broker)):
-    return MixerEventRepository(broker)
+async def get_mixer_event_repository(rpc_client: RpcClientDependency):
+    return MixerEventRepository(rpc_client)
 
 
 MixerEventRepositoryDependency = Annotated[
@@ -81,8 +88,8 @@ AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
 
 
 # --- Server repositories ---
-async def get_server_core_repository(broker=Depends(get_broker)):
-    return ServerCoreRepository(broker)
+async def get_server_core_repository(rpc_client: RpcClientDependency):
+    return ServerCoreRepository(rpc_client)
 
 
 ServerCoreRepositoryDependency = Annotated[
@@ -90,8 +97,8 @@ ServerCoreRepositoryDependency = Annotated[
 ]
 
 
-async def get_server_games_repository(broker=Depends(get_broker)):
-    return ServerGameRepository(broker)
+async def get_server_games_repository(rpc_client: RpcClientDependency):
+    return ServerGameRepository(rpc_client)
 
 
 ServerGamesRepositoryDependency = Annotated[
@@ -99,22 +106,22 @@ ServerGamesRepositoryDependency = Annotated[
 ]
 
 
-async def get_invite_repository(broker=Depends(get_broker)):
-    return InviteRepository(broker)
+async def get_invite_repository(rpc_client: RpcClientDependency):
+    return InviteRepository(rpc_client)
 
 
 InviteRepositoryDependency = Annotated[InviteRepository, Depends(get_invite_repository)]
 
 
-async def get_member_repository(broker=Depends(get_broker)):
-    return MemberRepository(broker)
+async def get_member_repository(rpc_client: RpcClientDependency):
+    return MemberRepository(rpc_client)
 
 
 MemberRepositoryDependency = Annotated[MemberRepository, Depends(get_member_repository)]
 
 
-async def get_game_role_repository(broker=Depends(get_broker)):
-    return GameRoleRepository(broker)
+async def get_game_role_repository(rpc_client: RpcClientDependency):
+    return GameRoleRepository(rpc_client)
 
 
 GameRoleRepositoryDependency = Annotated[
@@ -122,15 +129,15 @@ GameRoleRepositoryDependency = Annotated[
 ]
 
 
-async def get_rating_repository(broker=Depends(get_broker)):
-    return RatingRepository(broker)
+async def get_rating_repository(rpc_client: RpcClientDependency):
+    return RatingRepository(rpc_client)
 
 
 RatingRepositoryDependency = Annotated[RatingRepository, Depends(get_rating_repository)]
 
 
-async def get_server_role_repository(broker=Depends(get_broker)):
-    return ServerRoleRepository(broker)
+async def get_server_role_repository(rpc_client: RpcClientDependency):
+    return ServerRoleRepository(rpc_client)
 
 
 ServerRoleRepositoryDependency = Annotated[
@@ -138,8 +145,8 @@ ServerRoleRepositoryDependency = Annotated[
 ]
 
 
-async def get_custom_repository(broker=Depends(get_broker)):
-    return MemberCustomRepository(broker)
+async def get_custom_repository(rpc_client: RpcClientDependency):
+    return MemberCustomRepository(rpc_client)
 
 
 MemberCustomRepositoryDependency = Annotated[

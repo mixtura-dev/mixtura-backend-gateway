@@ -1,6 +1,6 @@
 from uuid import UUID
-from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rabbit import RabbitRpcClient
 from src.infra.communication.rpc import rpc_request
 
 from ..models.roles.request import (
@@ -20,13 +20,13 @@ from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class ServerRoleRepository:
-    def __init__(self, broker: RabbitBroker):
-        self.broker = broker
+    def __init__(self, rpc_client: RabbitRpcClient):
+        self.rpc_client = rpc_client
 
     async def get_global_permissions(
         self,
     ) -> ResponseMessage[list[PermissionResponse] | ErrorResponse]:
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             None, queue="server.global.permissions"
         )
         return ResponseMessage[
@@ -43,7 +43,7 @@ class ServerRoleRepository:
             restriction_mask=access.restriction_mask,
         )
         request = ListServerRolesRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.role.list"
         )
         return ResponseMessage[
@@ -67,7 +67,7 @@ class ServerRoleRepository:
             name=name,
             position=position,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.role.create"
         )
         return ResponseMessage[ServerRoleResponse | ErrorResponse].model_validate_json(
@@ -93,7 +93,7 @@ class ServerRoleRepository:
             name=name,
             position=position,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.role.update"
         )
         return ResponseMessage[ServerRoleResponse | ErrorResponse].model_validate_json(
@@ -117,7 +117,7 @@ class ServerRoleRepository:
             role_id=role_id,
             target_permissions_ids=target_permissions_ids,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.role.permissions.update"
         )
         return ResponseMessage[ServerRoleResponse | ErrorResponse].model_validate_json(
@@ -136,7 +136,7 @@ class ServerRoleRepository:
             ),
             role_id=role_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="server.role.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

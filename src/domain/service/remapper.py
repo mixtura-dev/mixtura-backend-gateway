@@ -11,6 +11,10 @@ from ..models.server.game_roles.response import (
 )
 from ..models.server.rating.response import RatingItemResponse, RatingSetResponse
 from ..models.server.games.response import GameResponse
+from ..models.mixer.response import (
+    ApplicationListItemResponse,
+    ApplicationListItemUserResponse,
+)
 
 import src.infra.communication.server.models.core.response as CommunicationCoreResponses
 import src.infra.communication.server.models.games.response as CommunicationGameResponses
@@ -22,6 +26,8 @@ import src.infra.communication.server.models.custom.response as CommunicationCus
 @dataclass
 class MappingContext:
     file_urls: dict[str, str] = field(default_factory=dict)
+    member_info: dict[UUID, ReducedMemberResponse] = field(default_factory=dict)
+    user_info: dict[UUID, object] = field(default_factory=dict)
 
 
 class RatingItemMapper:
@@ -355,6 +361,40 @@ class CustomMapper:
         return result
 
 
+class ApplicationMapper:
+    def extract_member_ids(
+        self, items: list[dict],
+    ) -> set[UUID]:
+        return {UUID(item["member_id"]) for item in items if item.get("member_id")}
+
+    def map(
+        self,
+        items: list[dict],
+        context: MappingContext,
+    ) -> list[ApplicationListItemResponse]:
+        result: list[ApplicationListItemResponse] = []
+        for item in items:
+            mid = UUID(item["member_id"]) if item.get("member_id") else None
+            member = context.member_info.get(mid) if mid else None
+            uid = member.user_id if member and member.user_id else None
+            user_obj = context.user_info.get(uid) if uid else None
+            user_info: ApplicationListItemUserResponse | None = None
+            if user_obj:
+                user_info = ApplicationListItemUserResponse(
+                    id=UUID(getattr(user_obj, "id", uid)),
+                    username=getattr(user_obj, "username", None),
+                )
+            result.append(ApplicationListItemResponse(
+                id=UUID(item["id"]),
+                member_id=mid,
+                status=item["status"],
+                is_approved=item["is_approved"],
+                created_at=item["created_at"],
+                user=user_info,
+            ))
+        return result
+
+
 class RemapperService:
     async def _fetch_file_urls(self, file_ids: set[str]) -> dict[str, str]:
         # TODO : implement actual file URL fetching logic
@@ -439,3 +479,13 @@ class RemapperService:
         context = MappingContext(file_urls=file_urls)
         mapped_customs = mapper.map(customs, context)
         return mapped_customs
+
+    async def map_applications_response(
+        self,
+        applications: list[dict],
+        member_info: dict[UUID, ReducedMemberResponse],
+        user_info: dict[UUID, object],
+    ) -> list[ApplicationListItemResponse]:
+        mapper = ApplicationMapper()
+        context = MappingContext(member_info=member_info, user_info=user_info)
+        return mapper.map(applications, context)

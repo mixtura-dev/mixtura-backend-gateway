@@ -1,6 +1,6 @@
 from uuid import UUID
-from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rabbit import RabbitRpcClient
 from src.infra.communication.rpc import rpc_request
 from ..models.game_roles.request import (
     GameRoleItemCreateRequest,
@@ -16,13 +16,13 @@ from ..models.response import ErrorResponse, ResponseMessage, StatusResponse
 
 
 class GameRoleRepository:
-    def __init__(self, broker: RabbitBroker):
-        self.broker = broker
+    def __init__(self, rpc_client: RabbitRpcClient):
+        self.rpc_client = rpc_client
 
     async def get_global_role_templates(
         self,
     ) -> ResponseMessage[list[GameRoleSetResponse] | ErrorResponse]:
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             None, queue="role_set.get_global"
         )
         return ResponseMessage[
@@ -39,7 +39,7 @@ class GameRoleRepository:
             restriction_mask=access.restriction_mask,
         )
         request = GetServerGameRoleSetsRequest(access_data=access_data)
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.get_by_server"
         )
         return ResponseMessage[GameRoleSetResponse | ErrorResponse].model_validate_json(
@@ -61,7 +61,7 @@ class GameRoleRepository:
         request = GameRoleSetUpdateRequest(
             access_data=access_data, role_set_id=role_set_id, name=name
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.update"
         )
         return ResponseMessage[GameRoleSetResponse | ErrorResponse].model_validate_json(
@@ -93,7 +93,7 @@ class GameRoleRepository:
             hidden=hidden,
             icon_id=icon_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.role.create"
         )
         return ResponseMessage[
@@ -125,7 +125,7 @@ class GameRoleRepository:
             hidden=hidden,
             icon_id=icon_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.role.update"
         )
         return ResponseMessage[
@@ -144,7 +144,7 @@ class GameRoleRepository:
             ),
             role_id=role_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.role.icon.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(
@@ -163,7 +163,7 @@ class GameRoleRepository:
             ),
             role_id=role_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="role_set.role.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

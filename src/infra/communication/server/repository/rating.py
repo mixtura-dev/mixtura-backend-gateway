@@ -1,6 +1,6 @@
 from uuid import UUID
-from faststream.rabbit import RabbitBroker, RabbitMessage
 
+from src.infra.communication.rabbit import RabbitRpcClient
 from src.infra.communication.rpc import rpc_request
 from ..models.rating.request import (
     GetServerRatingSetsRequest,
@@ -16,13 +16,13 @@ from src.domain.models.access import AccessData
 
 
 class RatingRepository:
-    def __init__(self, broker: RabbitBroker):
-        self.broker = broker
+    def __init__(self, rpc_client: RabbitRpcClient):
+        self.rpc_client = rpc_client
 
     async def get_global_rating_templates(
         self,
     ) -> ResponseMessage[list[RatingSetResponse] | ErrorResponse]:
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             None, queue="rating_set.get_global"
         )
         return ResponseMessage[
@@ -40,7 +40,7 @@ class RatingRepository:
                 restriction_mask=access.restriction_mask,
             )
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="rating_set.get_by_server"
         )
         return ResponseMessage[RatingSetResponse | ErrorResponse].model_validate_json(
@@ -68,7 +68,7 @@ class RatingRepository:
             min_rating=min_rating,
             max_rating=max_rating,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="rating_set.update"
         )
         return ResponseMessage[RatingSetResponse | ErrorResponse].model_validate_json(
@@ -94,7 +94,7 @@ class RatingRepository:
             threshold=threshold,
             icon_id=icon_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="rating_set.rating.create"
         )
         return ResponseMessage[RatingItemResponse | ErrorResponse].model_validate_json(
@@ -120,7 +120,7 @@ class RatingRepository:
             threshold=threshold,
             icon_id=icon_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="rating_set.rating.update"
         )
         return ResponseMessage[RatingItemResponse | ErrorResponse].model_validate_json(
@@ -141,7 +141,7 @@ class RatingRepository:
             ),
             rating_item_id=rating_item_id,
         )
-        response: RabbitMessage = await rpc_request(self.broker, 
+        response = await rpc_request(self.rpc_client,
             request, queue="rating_set.rating.delete"
         )
         return ResponseMessage[StatusResponse | ErrorResponse].model_validate_json(

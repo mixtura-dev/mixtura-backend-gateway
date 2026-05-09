@@ -165,3 +165,90 @@ class RecordedMatchResultResponse(BaseModel):
     team_ranks: list[float]
     rating_payload: dict
     rating_published: bool
+
+
+class ApplicationStatusResponse(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    WAITLIST = "WAITLIST"
+
+
+class SubmitApplicationResponse(BaseModel):
+    id: UUID
+    status: ApplicationStatusResponse
+    auto_approved: bool
+    player_id: UUID | None = None
+
+
+class ApplicationListItemUserResponse(BaseModel):
+    id: UUID
+    username: str | None = None
+
+
+class ApplicationListItemResponse(BaseModel):
+    id: UUID
+    member_id: UUID
+    status: ApplicationStatusResponse
+    is_approved: bool
+    created_at: datetime
+    user: ApplicationListItemUserResponse | None = None
+
+
+class ApplicationFilledFieldResponse(BaseModel):
+    custom_field_id: UUID
+    value: str
+
+
+class ApplicationIntegrationResponse(BaseModel):
+    user_provider_id: UUID
+
+
+class ApplicationDetailResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    member_id: UUID
+    status: ApplicationStatusResponse
+    role_priorities: dict[str, int] = Field(default_factory=dict)
+    filled_fields: list[ApplicationFilledFieldResponse] = Field(default_factory=list)
+    integrations: list[ApplicationIntegrationResponse] = Field(default_factory=list)
+    event_player_id: UUID | None = None
+
+
+class ReviewApplicationResponse(BaseModel):
+    id: UUID
+    status: ApplicationStatusResponse
+    player_id: UUID | None = None
+
+
+class ApplicationFormIntegrationResponse(BaseModel):
+    id: UUID
+    name: str
+
+
+class ApplicationFormRoleResponse(BaseModel):
+    id: UUID
+    game_role_id: UUID
+    override_max_count: int | None = None
+    override_min_count: int | None = None
+
+
+class ApplicationFormFieldResponse(BaseModel):
+    id: UUID
+    name: str
+    is_private: bool
+    is_required: bool
+
+
+class ApplicationFormTimeSettingsResponse(BaseModel):
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+
+
+class ApplicationFormSettingsResponse(BaseModel):
+    event_id: UUID
+    event_name: str
+    required_integrations: list[ApplicationFormIntegrationResponse] = Field(default_factory=list)
+    available_roles: list[ApplicationFormRoleResponse] = Field(default_factory=list)
+    custom_fields: list[ApplicationFormFieldResponse] = Field(default_factory=list)
+    time_settings: ApplicationFormTimeSettingsResponse | None = None

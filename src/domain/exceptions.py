@@ -44,3 +44,19 @@ class RabbitTimeoutException(HTTPException):
             status_code=HTTP_503_SERVICE_UNAVAILABLE,
             detail={"status": "error", "message": "Service is temporarily unavailable"},
         )
+
+
+class RpcTimeoutError(Exception):
+    """Transport-level timeout waiting for RPC reply."""
+
+
+class RpcOverloadedError(Exception):
+    """Transport-level error: max concurrent RPC limit reached."""
+
+
+class RpcPublishError(Exception):
+    """Transport-level error: failed to publish RPC request message."""
+
+
+class RpcClientClosedError(Exception):
+    """Transport-level error: RPC client is not running or already stopped."""

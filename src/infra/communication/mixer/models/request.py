@@ -140,6 +140,8 @@ class ListApplicationsRequest(BaseModel):
     access_data: AccessDataRequest
     status: ApplicationStatus | None = None
     pagination: PaginationRequest = PaginationRequest()
+    sort_by: str = "created_at"
+    sort_order: str = "desc"
 
 
 class ListPlayersRequest(BaseModel):

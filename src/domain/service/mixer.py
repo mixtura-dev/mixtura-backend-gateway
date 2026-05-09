@@ -147,6 +147,8 @@ class MixerEventService:
         status: str | None,
         page: int,
         page_size: int,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
     ):
         return self._unwrap(
             await self.event_repository.list_applications(
@@ -154,6 +156,8 @@ class MixerEventService:
                 event_id,
                 status,
                 PaginationRequest(page=page, page_size=page_size),
+                sort_by,
+                sort_order,
             )
         )
 
