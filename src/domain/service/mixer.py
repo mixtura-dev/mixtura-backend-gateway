@@ -29,17 +29,11 @@ class MixerEventService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
-    async def _ensure_rating_set_exists(
-        self, access: AccessData, rating_set_id: UUID | None
-    ) -> None:
-        if rating_set_id is None:
-            return
-
+    async def _get_server_rating_set_id(self, access: AccessData) -> UUID:
         response = await self.rating_repository.get_rating_set(access)
         if isinstance(response.message, ServerErrorResponse):
             raise ServiceException(response.status, response.message.message)
-        if response.message.id != rating_set_id:
-            raise ServiceException(404, "Rating set not found for server")
+        return response.message.id
 
     async def _ensure_member_exists(self, access: AccessData, member_id: UUID) -> None:
         response = await self.member_repository.get_member(access, member_id)
@@ -65,8 +59,8 @@ class MixerEventService:
         return self._unwrap(await self.event_repository.health())
 
     async def create_event(self, access: AccessData, body):
-        await self._ensure_rating_set_exists(access, body.rating_set_id)
-        return self._unwrap(await self.event_repository.create_event(access, body))
+        rating_set_id = await self._get_server_rating_set_id(access)
+        return self._unwrap(await self.event_repository.create_event(access, body, rating_set_id))
 
     async def get_event(self, access: AccessData, event_id: UUID):
         return self._unwrap(await self.event_repository.get_event(access, event_id))
@@ -88,7 +82,6 @@ class MixerEventService:
         )
 
     async def update_event(self, access: AccessData, event_id: UUID, body):
-        await self._ensure_rating_set_exists(access, body.rating_set_id)
         return self._unwrap(
             await self.event_repository.update_event(access, event_id, body)
         )
@@ -282,4 +275,82 @@ class MixerEventService:
                 active,
                 PaginationRequest(page=page, page_size=page_size),
             )
+        )
+
+    async def add_integration(self, access: AccessData, event_id: UUID, name: str):
+        return self._unwrap(
+            await self.event_repository.add_integration(access, event_id, name)
+        )
+
+    async def remove_integration(self, access: AccessData, event_id: UUID, integration_id: UUID):
+        return self._unwrap(
+            await self.event_repository.remove_integration(access, event_id, integration_id)
+        )
+
+    async def add_game_role(
+        self, access: AccessData, event_id: UUID, game_role_id: UUID,
+        override_max_count: int | None, override_min_count: int | None
+    ):
+        await self._ensure_game_roles_exist(access, {game_role_id})
+        return self._unwrap(
+            await self.event_repository.add_game_role(
+                access, event_id, game_role_id, override_max_count, override_min_count
+            )
+        )
+
+    async def update_game_role(
+        self, access: AccessData, event_id: UUID, selected_role_id: UUID,
+        override_max_count: int | None, override_min_count: int | None
+    ):
+        return self._unwrap(
+            await self.event_repository.update_game_role(
+                access, event_id, selected_role_id, override_max_count, override_min_count
+            )
+        )
+
+    async def remove_game_role(self, access: AccessData, event_id: UUID, selected_role_id: UUID):
+        return self._unwrap(
+            await self.event_repository.remove_game_role(access, event_id, selected_role_id)
+        )
+
+    async def add_custom_field(
+        self, access: AccessData, event_id: UUID, name: str,
+        is_private: bool, is_required: bool
+    ):
+        return self._unwrap(
+            await self.event_repository.add_custom_field(
+                access, event_id, name, is_private, is_required
+            )
+        )
+
+    async def update_custom_field(
+        self, access: AccessData, event_id: UUID, field_id: UUID,
+        name: str | None, is_private: bool | None, is_required: bool | None
+    ):
+        return self._unwrap(
+            await self.event_repository.update_custom_field(
+                access, event_id, field_id, name, is_private, is_required
+            )
+        )
+
+    async def remove_custom_field(self, access: AccessData, event_id: UUID, field_id: UUID):
+        return self._unwrap(
+            await self.event_repository.remove_custom_field(access, event_id, field_id)
+        )
+
+    async def update_time_settings(self, access: AccessData, event_id: UUID, body):
+        return self._unwrap(
+            await self.event_repository.update_time_settings(access, event_id, body)
+        )
+
+    async def list_events(
+        self, server_id: UUID, access: AccessData
+    ):
+        return self._unwrap(
+            await self.event_repository.list_events(server_id, access)
+        )
+
+    async def get_application_form_settings(self, event_id: UUID, access: AccessData | None):
+        return self._unwrap(
+            await self.event_repository.get_application_form_settings(event_id, access)
         )

@@ -10,6 +10,17 @@ from .models.request import (
     AccessDataRequest,
     ActivateEventRequest,
     AddOrganizerRequest,
+    AddIntegrationRequest,
+    RemoveIntegrationRequest,
+    AddGameRoleRequest,
+    UpdateGameRoleRequest,
+    RemoveGameRoleRequest,
+    AddCustomFieldRequest,
+    UpdateCustomFieldRequest,
+    RemoveCustomFieldRequest,
+    UpdateTimeSettingsRequest,
+    ListEventsUnifiedRequest,
+    GetApplicationFormSettingsRequest,
     CancelEventRequest,
     ChooseTeamFormationVariantRequest,
     CloseRegistrationRequest,
@@ -77,24 +88,27 @@ class MixerEventRepository:
         self,
         access: AccessData,
         body: BaseModel,
-    ) -> ResponseMessage[ErrorResponse | EventCard]:
+        rating_set_id: UUID,
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        data = body.model_dump()
+        data["rating_set_id"] = rating_set_id
         request = CreateEventRequest(
-            access_data=self._access_data(access), **body.model_dump()
+            access_data=self._access_data(access), **data
         )
         response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.create"
         )
-        return ResponseMessage[ErrorResponse | EventCard].model_validate_json(
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(
             response.body
         )
 
     async def get_event(
         self, access: AccessData, event_id: UUID
-    ) -> ResponseMessage[ErrorResponse | EventCard | EventDetail]:
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
         request = GetEventRequest(event_id=event_id, access_data=self._access_data(access))
         response: RabbitMessage = await rpc_request(self.broker, request, queue="event.get")
         return ResponseMessage[
-            ErrorResponse | EventCard | EventDetail
+            ErrorResponse | EventDetail
         ].model_validate_json(response.body)
 
     async def list_public_events(
@@ -110,14 +124,14 @@ class MixerEventRepository:
 
     async def list_private_events(
         self, access: AccessData, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[EventDetail]]:
+    ) -> ResponseMessage[ErrorResponse | list[EventCard]]:
         request = ListEventsRequest(
             access_data=self._access_data(access), pagination=pagination
         )
         response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.list_private"
         )
-        return ResponseMessage[ErrorResponse | list[EventDetail]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(
             response.body
         )
 
@@ -506,3 +520,147 @@ class MixerEventRepository:
         return ResponseMessage[
             ErrorResponse | list[SingleMatchView]
         ].model_validate_json(response.body)
+
+    async def add_integration(
+        self, access: AccessData, event_id: UUID, name: str
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = AddIntegrationRequest(
+            access_data=self._access_data(access), event_id=event_id, name=name
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.integration.add"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def remove_integration(
+        self, access: AccessData, event_id: UUID, integration_id: UUID
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = RemoveIntegrationRequest(
+            access_data=self._access_data(access), event_id=event_id, integration_id=integration_id
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.integration.remove"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def add_game_role(
+        self, access: AccessData, event_id: UUID, game_role_id: UUID,
+        override_max_count: int | None, override_min_count: int | None
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = AddGameRoleRequest(
+            access_data=self._access_data(access), 
+            event_id=event_id, 
+            game_role_id=game_role_id,
+            override_max_count=override_max_count,
+            override_min_count=override_min_count,
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.roles.add"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def update_game_role(
+        self, access: AccessData, event_id: UUID, selected_role_id: UUID,
+        override_max_count: int | None, override_min_count: int | None
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = UpdateGameRoleRequest(
+            access_data=self._access_data(access), 
+            event_id=event_id, 
+            selected_role_id=selected_role_id,
+            override_max_count=override_max_count,
+            override_min_count=override_min_count,
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.roles.update"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def remove_game_role(
+        self, access: AccessData, event_id: UUID, selected_role_id: UUID
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = RemoveGameRoleRequest(
+            access_data=self._access_data(access), event_id=event_id, selected_role_id=selected_role_id
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.roles.remove"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def add_custom_field(
+        self, access: AccessData, event_id: UUID, name: str,
+        is_private: bool, is_required: bool
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = AddCustomFieldRequest(
+            access_data=self._access_data(access), 
+            event_id=event_id, 
+            name=name,
+            is_private=is_private,
+            is_required=is_required,
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.custom_fields.add"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def update_custom_field(
+        self, access: AccessData, event_id: UUID, field_id: UUID,
+        name: str | None, is_private: bool | None, is_required: bool | None
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = UpdateCustomFieldRequest(
+            access_data=self._access_data(access), 
+            event_id=event_id, 
+            field_id=field_id,
+            name=name,
+            is_private=is_private,
+            is_required=is_required,
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.custom_fields.update"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def remove_custom_field(
+        self, access: AccessData, event_id: UUID, field_id: UUID
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = RemoveCustomFieldRequest(
+            access_data=self._access_data(access), event_id=event_id, field_id=field_id
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.custom_fields.remove"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def update_time_settings(
+        self, access: AccessData, event_id: UUID, body: BaseModel
+    ) -> ResponseMessage[ErrorResponse | EventDetail]:
+        request = UpdateTimeSettingsRequest(
+            access_data=self._access_data(access), event_id=event_id, **body.model_dump(exclude_unset=True)
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.settings.time_settings.update"
+        )
+        return ResponseMessage[ErrorResponse | EventDetail].model_validate_json(response.body)
+
+    async def list_events(
+        self, server_id: UUID, access: AccessData
+    ) -> ResponseMessage[ErrorResponse | list[EventCard]]:
+        request = ListEventsUnifiedRequest(
+            server_id=server_id,
+            access_data=self._access_data(access),
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.list"
+        )
+        return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(response.body)
+
+    async def get_application_form_settings(
+        self, event_id: UUID, access: AccessData | None
+    ) -> ResponseMessage[ErrorResponse | dict]:
+        request = GetApplicationFormSettingsRequest(
+            event_id=event_id,
+            access_data=self._access_data(access) if access else None,
+        )
+        response: RabbitMessage = await rpc_request(self.broker, 
+            request, queue="event.application.form_settings"
+        )
+        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)

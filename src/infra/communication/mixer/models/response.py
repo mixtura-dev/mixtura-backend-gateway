@@ -53,6 +53,36 @@ class EventCard(BaseModel):
     server_id: UUID
 
 
+class OrganizerData(BaseModel):
+    id: UUID
+    member_id: UUID
+
+
+class RequiredIntegrationData(BaseModel):
+    id: UUID
+    name: str
+
+
+class SelectedGameRoleData(BaseModel):
+    id: UUID
+    game_role_id: UUID
+    override_max_count: int | None = None
+    override_min_count: int | None = None
+
+
+class ApplicationTimeSettingsData(BaseModel):
+    id: UUID
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+
+
+class ApplicationCustomFieldData(BaseModel):
+    id: UUID
+    name: str
+    is_private: bool
+    is_required: bool
+
+
 class EventDetail(BaseModel):
     id: UUID
     name: str
@@ -65,6 +95,11 @@ class EventDetail(BaseModel):
     allow_multiple_drafts: bool
     rating_set_id: UUID | None
     server_id: UUID
+    organizers: list[OrganizerData] = []
+    required_integrations: list[RequiredIntegrationData] = []
+    selected_game_roles: list[SelectedGameRoleData] = []
+    time_settings: ApplicationTimeSettingsData | None = None
+    custom_fields: list[ApplicationCustomFieldData] = []
 
 
 class RatingSnapshotPlayer(BaseModel):

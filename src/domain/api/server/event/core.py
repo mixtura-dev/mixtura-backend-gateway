@@ -8,7 +8,13 @@ from src.dependency import (
     MixerEventServiceDependency,
     PaginationDependency,
 )
-from src.domain.models.mixer.request import CreateEventRequest, UpdateEventRequest
+from src.domain.models.mixer.request import (
+    CreateEventRequest,
+    UpdateEventRequest,
+    AddIntegrationRequest,
+    AddGameRoleRequest,
+    UpdateGameRoleRequest,
+)
 from src.domain.models.mixer.response import EventCardResponse, EventDetailResponse
 
 from ._utils import get_access
@@ -17,31 +23,17 @@ router = APIRouter(tags=["Event Core"])
 
 
 @router.get("/", response_model=list[EventCardResponse])
-async def list_public_events(
+async def list_events(
     server_id: UUID,
     event_service: MixerEventServiceDependency,
-    pagination: PaginationDependency,
-):
-    return await event_service.list_public_events(
-        server_id, pagination.page, pagination.page_size
-    )
-
-
-@router.get("/private", response_model=list[EventDetailResponse])
-async def list_private_events(
     user_id: AuthorizedUserID,
-    server_id: UUID,
-    event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
-    pagination: PaginationDependency,
 ):
     access = await get_access(server_id, user_id, member_service)
-    return await event_service.list_private_events(
-        access, pagination.page, pagination.page_size
-    )
+    return await event_service.list_events(server_id, access)
 
 
-@router.post("/", status_code=201, response_model=EventCardResponse)
+@router.post("/", status_code=201, response_model=EventDetailResponse)
 async def create_event(
     user_id: AuthorizedUserID,
     server_id: UUID,
@@ -53,7 +45,7 @@ async def create_event(
     return await event_service.create_event(access, body)
 
 
-@router.get("/{event_id}", response_model=EventCardResponse | EventDetailResponse)
+@router.get("/{event_id}", response_model=EventDetailResponse)
 async def get_event(
     user_id: AuthorizedUserID,
     server_id: UUID,
@@ -136,3 +128,73 @@ async def complete_event(
 ):
     access = await get_access(server_id, user_id, member_service)
     return await event_service.complete_event(access, event_id)
+
+
+@router.post("/{event_id}/integrations", response_model=EventDetailResponse)
+async def add_integration(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    body: AddIntegrationRequest,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    return await event_service.add_integration(access, event_id, body.name)
+
+
+@router.delete("/{event_id}/integrations/{integration_id}", response_model=EventDetailResponse)
+async def remove_integration(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    integration_id: UUID,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    return await event_service.remove_integration(access, event_id, integration_id)
+
+
+@router.post("/{event_id}/roles", response_model=EventDetailResponse)
+async def add_game_role(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    body: AddGameRoleRequest,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    return await event_service.add_game_role(
+        access, event_id, body.game_role_id, body.override_max_count, body.override_min_count
+    )
+
+
+@router.patch("/{event_id}/roles/{selected_role_id}", response_model=EventDetailResponse)
+async def update_game_role(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    selected_role_id: UUID,
+    body: UpdateGameRoleRequest,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    return await event_service.update_game_role(
+        access, event_id, selected_role_id, body.override_max_count, body.override_min_count
+    )
+
+
+@router.delete("/{event_id}/roles/{selected_role_id}", response_model=EventDetailResponse)
+async def remove_game_role(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    selected_role_id: UUID,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    return await event_service.remove_game_role(access, event_id, selected_role_id)

@@ -39,7 +39,6 @@ class CreateEventRequest(BaseModel):
     team_size: int
     team_formation: TeamFormation
     allow_multiple_drafts: bool
-    rating_set_id: UUID | None = None
 
 
 class UpdateEventRequest(BaseModel):
@@ -50,7 +49,6 @@ class UpdateEventRequest(BaseModel):
     team_size: int | None = None
     team_formation: TeamFormation | None = None
     allow_multiple_drafts: bool | None = None
-    rating_set_id: UUID | None = None
 
 
 class AddOrganizerRequest(BaseModel):
@@ -105,3 +103,35 @@ class RecordMatchResultRequest(BaseModel):
     is_draw: bool = False
     forfeit_team_ids: list[UUID] = Field(default_factory=list)
     rating_settings: dict[str, str | int | float | bool | None] | None = None
+
+
+class AddIntegrationRequest(BaseModel):
+    name: str
+
+
+class AddGameRoleRequest(BaseModel):
+    game_role_id: UUID
+    override_max_count: int | None = None
+    override_min_count: int | None = None
+
+
+class UpdateGameRoleRequest(BaseModel):
+    override_max_count: int | None = None
+    override_min_count: int | None = None
+
+
+class AddCustomFieldRequest(BaseModel):
+    name: str
+    is_private: bool = False
+    is_required: bool = False
+
+
+class UpdateCustomFieldRequest(BaseModel):
+    name: str | None = None
+    is_private: bool | None = None
+    is_required: bool | None = None
+
+
+class UpdateTimeSettingsRequest(BaseModel):
+    start_time: datetime | None = None
+    end_time: datetime | None = None
