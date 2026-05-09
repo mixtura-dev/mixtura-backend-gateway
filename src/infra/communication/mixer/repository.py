@@ -654,11 +654,11 @@ class MixerEventRepository:
         return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(response.body)
 
     async def get_application_form_settings(
-        self, event_id: UUID, access: AccessData | None
+        self, event_id: UUID, access: AccessData
     ) -> ResponseMessage[ErrorResponse | dict]:
         request = GetApplicationFormSettingsRequest(
             event_id=event_id,
-            access_data=self._access_data(access) if access else None,
+            access_data=self._access_data(access),
         )
         response: RabbitMessage = await rpc_request(self.broker, 
             request, queue="event.application.form_settings"

@@ -350,7 +350,7 @@ class MixerEventService:
             await self.event_repository.list_events(server_id, access)
         )
 
-    async def get_application_form_settings(self, event_id: UUID, access: AccessData | None):
+    async def get_application_form_settings(self, event_id: UUID, access: AccessData):
         return self._unwrap(
             await self.event_repository.get_application_form_settings(event_id, access)
         )

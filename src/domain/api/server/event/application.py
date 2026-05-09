@@ -79,15 +79,13 @@ async def review_application(
 
 @router.get("/{event_id}/applications/form", response_model=dict)
 async def get_application_form_settings(
+    user_id: AuthorizedUserID,
     server_id: UUID,
     event_id: UUID,
     event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
-    user_id: AuthorizedUserID | None = None,
 ):
-    access = None
-    if user_id:
-        access = await get_access(server_id, user_id, member_service)
+    access = await get_access(server_id, user_id, member_service)
     return await event_service.get_application_form_settings(event_id, access)
 
 

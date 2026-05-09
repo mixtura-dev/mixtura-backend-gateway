@@ -57,12 +57,12 @@ class CreateEventRequest(BaseModel):
 
 class GetEventRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
 
 
 class ListEventsRequest(BaseModel):
     server_id: UUID | None = None
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     pagination: PaginationRequest = PaginationRequest()
 
 
@@ -102,7 +102,7 @@ class CompleteEventRequest(ActivateEventRequest):
 
 class ListOrganizersRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     pagination: PaginationRequest = PaginationRequest()
 
 
@@ -126,7 +126,7 @@ class SubmitApplicationRequest(BaseModel):
 
 class GetApplicationRequest(BaseModel):
     application_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
 
 
 class ReviewApplicationRequest(BaseModel):
@@ -137,14 +137,14 @@ class ReviewApplicationRequest(BaseModel):
 
 class ListApplicationsRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     status: ApplicationStatus | None = None
     pagination: PaginationRequest = PaginationRequest()
 
 
 class ListPlayersRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     status: EventPlayerStatus | None = None
     pagination: PaginationRequest = PaginationRequest()
 
@@ -173,12 +173,12 @@ class CreateDraftRequest(BaseModel):
 
 class GetDraftRequest(BaseModel):
     draft_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
 
 
 class ListDraftsRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     pagination: PaginationRequest = PaginationRequest()
 
 
@@ -201,7 +201,7 @@ class RunTeamFormationRequest(BaseModel):
 
 class GetTeamFormationRequest(BaseModel):
     draft_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     pagination: PaginationRequest = PaginationRequest()
 
 
@@ -213,7 +213,7 @@ class ChooseTeamFormationVariantRequest(BaseModel):
 
 class ListTeamsRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     pagination: PaginationRequest = PaginationRequest()
 
 
@@ -237,12 +237,12 @@ class RecordMatchResultRequest(BaseModel):
 
 class GetMatchRequest(BaseModel):
     match_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
 
 
 class ListMatchesRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
     active: bool | None = None
     pagination: PaginationRequest = PaginationRequest()
 
@@ -322,4 +322,4 @@ class ListEventsUnifiedRequest(BaseModel):
 
 class GetApplicationFormSettingsRequest(BaseModel):
     event_id: UUID
-    access_data: AccessDataRequest | None = None
+    access_data: AccessDataRequest
