@@ -38,6 +38,8 @@ class _RawApplication(TypedDict):
     status: str
     is_approved: bool
     created_at: str
+    roles: list[dict]
+    integrations: list[dict]
 
 
 router = APIRouter(tags=["Event Application"])
@@ -95,7 +97,22 @@ async def list_applications(
         except Exception:
             pass
 
-    return await remapper_service.map_applications_response(applications, member_info, user_info)
+    unique_integration_ids = set()
+    for app in applications:
+        for integration in app.get("integrations", []):
+            if integration.get("integration_id"):
+                unique_integration_ids.add(UUID(integration["integration_id"]))
+
+    integration_names: dict[UUID, str] = {}
+    if unique_integration_ids:
+        try:
+            integration_result = await auth_service.get_integration_accounts(list(unique_integration_ids))
+            if isinstance(integration_result, dict):
+                integration_names = dict(integration_result)
+        except Exception:
+            pass
+
+    return await remapper_service.map_applications_response(applications, member_info, user_info, integration_names)
 
 
 @router.get("/applications/{application_id}", response_model=ApplicationDetailResponse)

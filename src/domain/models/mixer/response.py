@@ -181,6 +181,19 @@ class SubmitApplicationResponse(BaseModel):
     player_id: UUID | None = None
 
 
+class ApplicationRoleItemResponse(BaseModel):
+    role_id: UUID
+    game_role_id: UUID | None = None
+    priority: int
+
+
+class ApplicationIntegrationItemResponse(BaseModel):
+    integration_id: UUID
+    provider_id: UUID
+    provider_name: str
+    account_name: str | None = None
+
+
 class ApplicationListItemUserResponse(BaseModel):
     id: UUID
     username: str | None = None
@@ -193,6 +206,8 @@ class ApplicationListItemResponse(BaseModel):
     is_approved: bool
     created_at: datetime
     user: ApplicationListItemUserResponse | None = None
+    roles: list[ApplicationRoleItemResponse] = []
+    integrations: list[ApplicationIntegrationItemResponse] = []
 
 
 class ApplicationFilledFieldResponse(BaseModel):

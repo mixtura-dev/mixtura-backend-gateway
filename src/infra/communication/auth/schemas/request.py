@@ -58,3 +58,7 @@ class OAuthConfirmRequest(BaseModel):
     provider: str
     code: str
     user_id: UUID | None
+
+
+class IntegrationAccountRequest(BaseModel):
+    integration_ids: list[UUID]

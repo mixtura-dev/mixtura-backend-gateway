@@ -14,6 +14,8 @@ from ..models.server.games.response import GameResponse
 from ..models.mixer.response import (
     ApplicationListItemResponse,
     ApplicationListItemUserResponse,
+    ApplicationRoleItemResponse,
+    ApplicationIntegrationItemResponse,
 )
 
 import src.infra.communication.server.models.core.response as CommunicationCoreResponses
@@ -28,6 +30,7 @@ class MappingContext:
     file_urls: dict[str, str] = field(default_factory=dict)
     member_info: dict[UUID, ReducedMemberResponse] = field(default_factory=dict)
     user_info: dict[UUID, object] = field(default_factory=dict)
+    integration_names: dict[UUID, str] = field(default_factory=dict)
 
 
 class RatingItemMapper:
@@ -384,6 +387,25 @@ class ApplicationMapper:
                     id=UUID(getattr(user_obj, "id", uid)),
                     username=getattr(user_obj, "username", None),
                 )
+
+            roles: list[ApplicationRoleItemResponse] = []
+            for role_data in item.get("roles", []):
+                roles.append(ApplicationRoleItemResponse(
+                    role_id=UUID(role_data["role_id"]),
+                    game_role_id=UUID(role_data["game_role_id"]) if role_data.get("game_role_id") else None,
+                    priority=role_data["priority"],
+                ))
+
+            integrations: list[ApplicationIntegrationItemResponse] = []
+            for int_data in item.get("integrations", []):
+                integration_id = UUID(int_data["integration_id"])
+                integrations.append(ApplicationIntegrationItemResponse(
+                    integration_id=integration_id,
+                    provider_id=UUID(int_data["provider_id"]),
+                    provider_name=int_data["provider_name"],
+                    account_name=context.integration_names.get(integration_id),
+                ))
+
             result.append(ApplicationListItemResponse(
                 id=UUID(item["id"]),
                 member_id=mid,
@@ -391,6 +413,8 @@ class ApplicationMapper:
                 is_approved=item["is_approved"],
                 created_at=item["created_at"],
                 user=user_info,
+                roles=roles,
+                integrations=integrations,
             ))
         return result
 
@@ -485,7 +509,8 @@ class RemapperService:
         applications: list[dict],
         member_info: dict[UUID, ReducedMemberResponse],
         user_info: dict[UUID, object],
+        integration_names: dict[UUID, str],
     ) -> list[ApplicationListItemResponse]:
         mapper = ApplicationMapper()
-        context = MappingContext(member_info=member_info, user_info=user_info)
+        context = MappingContext(member_info=member_info, user_info=user_info, integration_names=integration_names)
         return mapper.map(applications, context)

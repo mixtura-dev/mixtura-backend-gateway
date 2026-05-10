@@ -44,6 +44,12 @@ class AuthService:
             raise ServiceException(response.status, response.message.message)
         return response.message
 
+    async def get_integration_accounts(self, integration_ids: list[UUID]):
+        response = await self.auth_repository.get_integration_accounts(integration_ids)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return response.message
+
     async def sign_in(self, login: str, password: str):
         response = await self.auth_repository.sign_in(login, password)
         if isinstance(response.message, ErrorResponse):

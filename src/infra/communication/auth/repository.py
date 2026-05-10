@@ -19,6 +19,7 @@ from .schemas.user_info import AuthCheckResponse, UserResponse
 from .schemas.request import (
     EmailRequest,
     EmailVerifyRequest,
+    IntegrationAccountRequest,
     OAuthConfirmRequest,
     PasswordConfirmRequest,
     SignInRequest,
@@ -85,6 +86,17 @@ class AuthRepository:
             request, queue="auth.get_users.bulk"
         )
         return ResponseMessage[dict[UUID, UserResponse] | ErrorResponse].model_validate_json(
+            response.body
+        )
+
+    async def get_integration_accounts(
+        self, integration_ids: list[UUID]
+    ) -> ResponseMessage[dict[UUID, str] | ErrorResponse]:
+        request = IntegrationAccountRequest(integration_ids=integration_ids)
+        response = await rpc_request(self.rpc_client,
+            request, queue="auth.integrations.get_accounts"
+        )
+        return ResponseMessage[dict[UUID, str] | ErrorResponse].model_validate_json(
             response.body
         )
 
