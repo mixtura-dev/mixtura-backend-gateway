@@ -34,7 +34,6 @@ from .models.request import (
     HealthRequest,
     ListApplicationsRequest,
     ListDraftsRequest,
-    ListEventsRequest,
     ListMatchesRequest,
     ListOrganizersRequest,
     ListPlayersRequest,
@@ -109,30 +108,6 @@ class MixerEventRepository:
         return ResponseMessage[
             ErrorResponse | EventDetail
         ].model_validate_json(response.body)
-
-    async def list_public_events(
-        self, server_id: UUID, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[EventCard]]:
-        request = ListEventsRequest(server_id=server_id, pagination=pagination)
-        response = await rpc_request(self.rpc_client,
-            request, queue="event.list_public"
-        )
-        return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(
-            response.body
-        )
-
-    async def list_private_events(
-        self, access: AccessData, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[EventCard]]:
-        request = ListEventsRequest(
-            access_data=self._access_data(access), pagination=pagination
-        )
-        response = await rpc_request(self.rpc_client,
-            request, queue="event.list_private"
-        )
-        return ResponseMessage[ErrorResponse | list[EventCard]].model_validate_json(
-            response.body
-        )
 
     async def update_event(
         self,

@@ -65,22 +65,6 @@ class MixerEventService:
     async def get_event(self, access: AccessData, event_id: UUID):
         return self._unwrap(await self.event_repository.get_event(access, event_id))
 
-    async def list_public_events(self, server_id: UUID, page: int, page_size: int):
-        return self._unwrap(
-            await self.event_repository.list_public_events(
-                server_id, PaginationRequest(page=page, page_size=page_size)
-            )
-        )
-
-    async def list_private_events(
-        self, access: AccessData, page: int, page_size: int
-    ):
-        return self._unwrap(
-            await self.event_repository.list_private_events(
-                access, PaginationRequest(page=page, page_size=page_size)
-            )
-        )
-
     async def update_event(self, access: AccessData, event_id: UUID, body):
         return self._unwrap(
             await self.event_repository.update_event(access, event_id, body)
