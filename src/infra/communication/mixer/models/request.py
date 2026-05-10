@@ -116,10 +116,17 @@ class RemoveOrganizerRequest(AddOrganizerRequest):
     pass
 
 
+class IntegrationPayload(BaseModel):
+    integration_id: UUID
+    provider_id: UUID
+    provider_name: str
+
+
 class SubmitApplicationRequest(BaseModel):
     access_data: AccessDataRequest
     event_id: UUID
     integration_ids: list[UUID] = Field(default_factory=list)
+    integrations: list[IntegrationPayload] = Field(default_factory=list)
     filled_fields: dict[UUID, str] = Field(default_factory=dict)
     role_priorities: dict[UUID, int] = Field(default_factory=dict)
 

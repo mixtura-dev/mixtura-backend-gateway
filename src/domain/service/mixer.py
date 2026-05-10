@@ -18,11 +18,13 @@ class MixerEventService:
         rating_repository: RatingRepository,
         member_repository: MemberRepository,
         game_role_repository: GameRoleRepository,
+        auth_service=None,
     ) -> None:
         self.event_repository = event_repository
         self.rating_repository = rating_repository
         self.member_repository = member_repository
         self.game_role_repository = game_role_repository
+        self.auth_service = auth_service
 
     def _unwrap(self, response):
         if isinstance(response.message, ErrorResponse):
@@ -113,11 +115,38 @@ class MixerEventService:
             await self.event_repository.remove_organizer(access, event_id, member_id)
         )
 
-    async def submit_application(self, access: AccessData, event_id: UUID, body):
+    async def submit_application(self, access: AccessData, event_id: UUID, body, user_id: UUID):
         await self._ensure_game_roles_exist(access, set(body.role_priorities))
+        enriched_body = await self._enrich_integrations(body, user_id)
         return self._unwrap(
-            await self.event_repository.submit_application(access, event_id, body)
+            await self.event_repository.submit_application(access, event_id, enriched_body)
         )
+
+    async def _enrich_integrations(self, body, user_id: UUID):
+        if not self.auth_service or not body.integration_ids:
+            return body
+
+        user_providers = await self.auth_service.get_user_providers(user_id)
+        provider_map = {p["client_id"]: p for p in user_providers if p["client_id"]}
+
+        from src.infra.communication.mixer.models.request import IntegrationPayload
+
+        enriched_integrations = []
+        for integration_id in body.integration_ids:
+            integration_id_str = str(integration_id)
+            if integration_id_str in provider_map:
+                provider = provider_map[integration_id_str]
+                enriched_integrations.append(
+                    IntegrationPayload(
+                        integration_id=integration_id,
+                        provider_id=UUID(integration_id_str),
+                        provider_name=provider["name"],
+                    )
+                )
+
+        body_dict = body.model_dump()
+        body_dict["integrations"] = [e.model_dump() for e in enriched_integrations]
+        return type(body)(**body_dict)
 
     async def get_application(self, access: AccessData, application_id: UUID):
         return self._unwrap(

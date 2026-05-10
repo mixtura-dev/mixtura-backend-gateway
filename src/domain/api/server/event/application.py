@@ -53,7 +53,7 @@ async def submit_application(
     member_service: MemberServiceDependency,
 ):
     access = await get_access(server_id, user_id, member_service)
-    return await event_service.submit_application(access, event_id, body)
+    return await event_service.submit_application(access, event_id, body, user_id)
 
 
 @router.get("/{event_id}/applications", response_model=list[ApplicationListItemResponse])

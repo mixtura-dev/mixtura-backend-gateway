@@ -121,3 +121,12 @@ class AuthService:
         if isinstance(response.message, TokenResponse):
             return (response.message.token, response.message.expires)
         return ("", 0)
+
+    async def get_user_providers(self, user_id: UUID) -> list[dict]:
+        response = await self.auth_repository.get_user(user_id)
+        if isinstance(response.message, ErrorResponse):
+            raise ServiceException(response.status, response.message.message)
+        return [
+            {"name": p.name, "client_id": p.client_id, "client_username": p.client_username}
+            for p in response.message.providers
+        ]

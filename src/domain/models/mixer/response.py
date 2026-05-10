@@ -221,34 +221,10 @@ class ReviewApplicationResponse(BaseModel):
     player_id: UUID | None = None
 
 
-class ApplicationFormIntegrationResponse(BaseModel):
-    id: UUID
-    name: str
-
-
-class ApplicationFormRoleResponse(BaseModel):
-    id: UUID
-    game_role_id: UUID
-    override_max_count: int | None = None
-    override_min_count: int | None = None
-
-
-class ApplicationFormFieldResponse(BaseModel):
-    id: UUID
-    name: str
-    is_private: bool
-    is_required: bool
-
-
-class ApplicationFormTimeSettingsResponse(BaseModel):
-    start_time: datetime | None = None
-    end_time: datetime | None = None
-
-
 class ApplicationFormSettingsResponse(BaseModel):
     event_id: UUID
     event_name: str
-    required_integrations: list[ApplicationFormIntegrationResponse] = Field(default_factory=list)
-    available_roles: list[ApplicationFormRoleResponse] = Field(default_factory=list)
-    custom_fields: list[ApplicationFormFieldResponse] = Field(default_factory=list)
-    time_settings: ApplicationFormTimeSettingsResponse | None = None
+    required_integrations: list[RequiredIntegrationResponse] = Field(default_factory=list)
+    available_roles: list[SelectedGameRoleResponse] = Field(default_factory=list)
+    custom_fields: list[ApplicationCustomFieldResponse] = Field(default_factory=list)
+    time_settings: ApplicationTimeSettingsResponse | None = None
