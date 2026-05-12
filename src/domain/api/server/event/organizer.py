@@ -9,6 +9,7 @@ from src.dependency import (
     PaginationDependency,
 )
 from src.domain.models.mixer.request import AddOrganizerRequest
+from src.domain.models.mixer.response import OrganizerItemResponse
 from src.domain.models.response import StatusResponse
 
 from ._utils import get_access
@@ -16,7 +17,7 @@ from ._utils import get_access
 router = APIRouter(tags=["Event Organizer"])
 
 
-@router.get("/{event_id}/organizers", response_model=list[dict])
+@router.get("/{event_id}/organizers", response_model=list[OrganizerItemResponse])
 async def list_organizers(
     user_id: AuthorizedUserID,
     server_id: UUID,
@@ -31,7 +32,7 @@ async def list_organizers(
     )
 
 
-@router.post("/{event_id}/organizers", status_code=201, response_model=dict)
+@router.post("/{event_id}/organizers", status_code=201, response_model=OrganizerItemResponse)
 async def add_organizer(
     user_id: AuthorizedUserID,
     server_id: UUID,

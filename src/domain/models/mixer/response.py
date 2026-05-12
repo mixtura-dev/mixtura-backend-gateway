@@ -31,6 +31,12 @@ class OrganizerResponse(BaseModel):
     member_id: UUID
 
 
+class OrganizerItemResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    member_id: UUID
+
+
 class RequiredIntegrationResponse(BaseModel):
     id: UUID
     name: str
@@ -178,7 +184,7 @@ class SubmitApplicationResponse(BaseModel):
     id: UUID
     status: ApplicationStatusResponse
     auto_approved: bool
-    player_id: UUID | None = None
+    player_id: UUID
 
 
 class ApplicationRoleItemResponse(BaseModel):
@@ -215,8 +221,15 @@ class ApplicationFilledFieldResponse(BaseModel):
     value: str
 
 
+class ApplicationRolePriorityResponse(BaseModel):
+    role_id: UUID
+    priority: int
+
+
 class ApplicationIntegrationResponse(BaseModel):
-    user_provider_id: UUID
+    integration_id: UUID
+    provider_id: UUID
+    provider_name: str
 
 
 class ApplicationDetailResponse(BaseModel):
@@ -224,7 +237,7 @@ class ApplicationDetailResponse(BaseModel):
     event_id: UUID
     member_id: UUID
     status: ApplicationStatusResponse
-    role_priorities: dict[str, int] = Field(default_factory=dict)
+    role_priorities: list[ApplicationRolePriorityResponse] = Field(default_factory=list)
     filled_fields: list[ApplicationFilledFieldResponse] = Field(default_factory=list)
     integrations: list[ApplicationIntegrationResponse] = Field(default_factory=list)
     event_player_id: UUID | None = None

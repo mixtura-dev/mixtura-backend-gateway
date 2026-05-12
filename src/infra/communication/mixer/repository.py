@@ -51,9 +51,15 @@ from .models.request import (
     UpdatePlayerStatusRequest,
 )
 from .models.response import (
+    ApplicationDetail,
+    ApplicationFormSettings,
+    ApplicationListItem,
+    ApplicationReviewResult,
+    ApplicationSubmitResult,
     ErrorResponse,
     EventCard,
     EventDetail,
+    OrganizerItem,
     RecordedMatchResult,
     ResponseMessage,
     SingleMatchView,
@@ -192,7 +198,7 @@ class MixerEventRepository:
 
     async def list_organizers(
         self, access: AccessData, event_id: UUID, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[dict]]:
+    ) -> ResponseMessage[ErrorResponse | list[OrganizerItem]]:
         request = ListOrganizersRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -201,13 +207,13 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.organizer.list"
         )
-        return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[OrganizerItem]].model_validate_json(
             response.body
         )
 
     async def add_organizer(
         self, access: AccessData, event_id: UUID, member_id: UUID
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | OrganizerItem]:
         request = AddOrganizerRequest(
             access_data=self._access_data(access),
             event_id=event_id,
@@ -216,7 +222,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.organizer.add"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | OrganizerItem].model_validate_json(response.body)
 
     async def remove_organizer(
         self, access: AccessData, event_id: UUID, member_id: UUID
@@ -238,25 +244,25 @@ class MixerEventRepository:
         access: AccessData,
         event_id: UUID,
         body: BaseModel,
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | ApplicationSubmitResult]:
         request = SubmitApplicationRequest(
             access_data=self._access_data(access), event_id=event_id, **body.model_dump()
         )
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.submit"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | ApplicationSubmitResult].model_validate_json(response.body)
 
     async def get_application(
         self, access: AccessData, application_id: UUID
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | ApplicationDetail]:
         request = GetApplicationRequest(
             application_id=application_id, access_data=self._access_data(access)
         )
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.get"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | ApplicationDetail].model_validate_json(response.body)
 
     async def list_applications(
         self,
@@ -266,7 +272,7 @@ class MixerEventRepository:
         pagination: PaginationRequest,
         sort_by: str = "created_at",
         sort_order: str = "desc",
-    ) -> ResponseMessage[ErrorResponse | list[dict]]:
+    ) -> ResponseMessage[ErrorResponse | list[ApplicationListItem]]:
         request = ListApplicationsRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -278,7 +284,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.list"
         )
-        return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[ApplicationListItem]].model_validate_json(
             response.body
         )
 
@@ -287,7 +293,7 @@ class MixerEventRepository:
         access: AccessData,
         application_id: UUID,
         body: BaseModel,
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | ApplicationReviewResult]:
         request = ReviewApplicationRequest(
             access_data=self._access_data(access),
             application_id=application_id,
@@ -296,7 +302,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.review"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | ApplicationReviewResult].model_validate_json(response.body)
 
     async def list_players(
         self,
@@ -633,7 +639,7 @@ class MixerEventRepository:
 
     async def get_application_form_settings(
         self, event_id: UUID, access: AccessData
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | ApplicationFormSettings]:
         request = GetApplicationFormSettingsRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -641,4 +647,4 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.form_settings"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | ApplicationFormSettings].model_validate_json(response.body)

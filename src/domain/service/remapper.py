@@ -23,6 +23,7 @@ import src.infra.communication.server.models.games.response as CommunicationGame
 import src.infra.communication.server.models.rating.response as CommunicationRatingResponses
 import src.infra.communication.server.models.game_roles.response as CommunicationGameRoleResponses
 import src.infra.communication.server.models.custom.response as CommunicationCustomResponses
+import src.infra.communication.mixer.models.response as CommunicationMixerResponses
 
 
 @dataclass
@@ -366,19 +367,19 @@ class CustomMapper:
 
 class ApplicationMapper:
     def extract_member_ids(
-        self, items: list[dict],
+        self, items: list[CommunicationMixerResponses.ApplicationListItem],
     ) -> set[UUID]:
-        return {UUID(item["member_id"]) for item in items if item.get("member_id")}
+        return {item.member_id for item in items}
 
     def map(
         self,
-        items: list[dict],
+        items: list[CommunicationMixerResponses.ApplicationListItem],
         context: MappingContext,
     ) -> list[ApplicationListItemResponse]:
         result: list[ApplicationListItemResponse] = []
         for item in items:
-            mid = UUID(item["member_id"]) if item.get("member_id") else None
-            member = context.member_info.get(mid) if mid else None
+            mid = item.member_id
+            member = context.member_info.get(mid)
             uid = member.user_id if member and member.user_id else None
             user_obj = context.user_info.get(uid) if uid else None
             user_info: ApplicationListItemUserResponse | None = None
@@ -389,29 +390,29 @@ class ApplicationMapper:
                 )
 
             roles: list[ApplicationRoleItemResponse] = []
-            for role_data in item.get("roles", []):
+            for role_data in item.roles:
                 roles.append(ApplicationRoleItemResponse(
-                    role_id=UUID(role_data["role_id"]),
-                    game_role_id=UUID(role_data["game_role_id"]) if role_data.get("game_role_id") else None,
-                    priority=role_data["priority"],
+                    role_id=role_data.role_id,
+                    game_role_id=role_data.game_role_id,
+                    priority=role_data.priority,
                 ))
 
             integrations: list[ApplicationIntegrationItemResponse] = []
-            for int_data in item.get("integrations", []):
-                integration_id = UUID(int_data["integration_id"])
+            for int_data in item.integrations:
+                integration_id = int_data.integration_id
                 integrations.append(ApplicationIntegrationItemResponse(
                     integration_id=integration_id,
-                    provider_id=UUID(int_data["provider_id"]),
-                    provider_name=int_data["provider_name"],
+                    provider_id=int_data.provider_id,
+                    provider_name=int_data.provider_name,
                     account_name=context.integration_names.get(integration_id),
                 ))
 
             result.append(ApplicationListItemResponse(
-                id=UUID(item["id"]),
+                id=item.id,
                 member_id=mid,
-                status=item["status"],
-                is_approved=item["is_approved"],
-                created_at=item["created_at"],
+                status=item.status.value,
+                is_approved=item.is_approved,
+                created_at=item.created_at,
                 user=user_info,
                 roles=roles,
                 integrations=integrations,
@@ -506,7 +507,7 @@ class RemapperService:
 
     async def map_applications_response(
         self,
-        applications: list[dict],
+        applications: list[CommunicationMixerResponses.ApplicationListItem],
         member_info: dict[UUID, ReducedMemberResponse],
         user_info: dict[UUID, object],
         integration_names: dict[UUID, str],

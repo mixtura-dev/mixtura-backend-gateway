@@ -1,4 +1,3 @@
-from typing import TypedDict
 from uuid import UUID
 
 from fastapi import APIRouter
@@ -30,18 +29,6 @@ from src.domain.models.mixer.response import (
 from src.domain.models.server.member.response import ReducedMemberResponse
 
 from ._utils import get_access
-
-
-class _RawApplication(TypedDict):
-    id: str
-    member_id: str
-    status: str
-    is_approved: bool
-    created_at: str
-    roles: list[dict]
-    integrations: list[dict]
-
-
 router = APIRouter(tags=["Event Application"])
 
 
@@ -77,7 +64,7 @@ async def list_applications(
         access, event_id, status, pagination.page, pagination.page_size, sort_by, sort_order
     )
 
-    unique_member_ids = {UUID(app["member_id"]) for app in applications if app.get("member_id")}
+    unique_member_ids = {app.member_id for app in applications}
     member_info: dict[UUID, ReducedMemberResponse] = {}
     for member_id in unique_member_ids:
         try:
@@ -99,9 +86,8 @@ async def list_applications(
 
     unique_integration_ids = set()
     for app in applications:
-        for integration in app.get("integrations", []):
-            if integration.get("integration_id"):
-                unique_integration_ids.add(UUID(integration["integration_id"]))
+        for integration in app.integrations:
+            unique_integration_ids.add(integration.integration_id)
 
     integration_names: dict[UUID, str] = {}
     if unique_integration_ids:

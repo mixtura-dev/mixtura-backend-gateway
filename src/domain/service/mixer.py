@@ -116,37 +116,9 @@ class MixerEventService:
         )
 
     async def submit_application(self, access: AccessData, event_id: UUID, body, user_id: UUID):
-        await self._ensure_game_roles_exist(access, set(body.role_priorities))
-        enriched_body = await self._enrich_integrations(body, user_id)
         return self._unwrap(
-            await self.event_repository.submit_application(access, event_id, enriched_body)
+            await self.event_repository.submit_application(access, event_id, body)
         )
-
-    async def _enrich_integrations(self, body, user_id: UUID):
-        if not self.auth_service or not body.integration_ids:
-            return body
-
-        user_providers = await self.auth_service.get_user_providers(user_id)
-        provider_map = {p["client_id"]: p for p in user_providers if p["client_id"]}
-
-        from src.infra.communication.mixer.models.request import IntegrationPayload
-
-        enriched_integrations = []
-        for integration_id in body.integration_ids:
-            integration_id_str = str(integration_id)
-            if integration_id_str in provider_map:
-                provider = provider_map[integration_id_str]
-                enriched_integrations.append(
-                    IntegrationPayload(
-                        integration_id=integration_id,
-                        provider_id=UUID(integration_id_str),
-                        provider_name=provider["name"],
-                    )
-                )
-
-        body_dict = body.model_dump()
-        body_dict["integrations"] = [e.model_dump() for e in enriched_integrations]
-        return type(body)(**body_dict)
 
     async def get_application(self, access: AccessData, application_id: UUID):
         return self._unwrap(

@@ -122,13 +122,22 @@ class IntegrationPayload(BaseModel):
     provider_name: str
 
 
+class FilledFieldPayload(BaseModel):
+    custom_field_id: UUID
+    value: str
+
+
+class RolePriorityPayload(BaseModel):
+    role_id: UUID
+    priority: int
+
+
 class SubmitApplicationRequest(BaseModel):
     access_data: AccessDataRequest
     event_id: UUID
-    integration_ids: list[UUID] = Field(default_factory=list)
     integrations: list[IntegrationPayload] = Field(default_factory=list)
-    filled_fields: dict[UUID, str] = Field(default_factory=dict)
-    role_priorities: dict[UUID, int] = Field(default_factory=dict)
+    filled_fields: list[FilledFieldPayload] = Field(default_factory=list)
+    role_priorities: list[RolePriorityPayload] = Field(default_factory=list)
 
 
 class GetApplicationRequest(BaseModel):
@@ -140,6 +149,7 @@ class ReviewApplicationRequest(BaseModel):
     access_data: AccessDataRequest
     application_id: UUID
     status: ApplicationStatus
+    role_priorities: list[RolePriorityPayload] = Field(default_factory=list)
 
 
 class ListApplicationsRequest(BaseModel):
