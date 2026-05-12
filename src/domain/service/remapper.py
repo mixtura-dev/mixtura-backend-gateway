@@ -384,7 +384,7 @@ class ApplicationMapper:
             user_info: ApplicationListItemUserResponse | None = None
             if user_obj:
                 user_info = ApplicationListItemUserResponse(
-                    id=UUID(getattr(user_obj, "id", uid)),
+                    id=getattr(user_obj, "id", uid),
                     username=getattr(user_obj, "username", None),
                 )
 
