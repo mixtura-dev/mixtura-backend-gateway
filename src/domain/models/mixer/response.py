@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from src.domain.models.server.member.response import ReducedMemberResponse
+
 
 class EventMatchType(str, Enum):
     SINGLE = "SINGLE"
@@ -29,6 +31,10 @@ class TeamFormation(str, Enum):
 class OrganizerResponse(BaseModel):
     id: UUID
     member_id: UUID
+
+
+class OrganizerListItemResponse(BaseModel):
+    member: ReducedMemberResponse
 
 
 class OrganizerItemResponse(BaseModel):
