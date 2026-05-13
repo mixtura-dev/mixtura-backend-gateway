@@ -133,6 +133,11 @@ class AuthService:
         if isinstance(response.message, ErrorResponse):
             raise ServiceException(response.status, response.message.message)
         return [
-            {"name": p.name, "client_id": p.client_id, "client_username": p.client_username}
+            {
+                "id": p.id,
+                "name": p.name,
+                "client_id": p.client_id,
+                "client_username": p.client_username,
+            }
             for p in response.message.providers
         ]

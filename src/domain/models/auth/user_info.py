@@ -7,6 +7,7 @@ from datetime import datetime
 class ProviderModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: UUID
     name: str
     client_id: Optional[str]
     client_username: Optional[str]
