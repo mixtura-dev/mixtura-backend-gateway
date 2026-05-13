@@ -115,9 +115,37 @@ class MixerEventService:
             await self.event_repository.remove_organizer(access, event_id, member_id)
         )
 
+    async def _resolve_application_integrations(self, body, user_id: UUID):
+        if not body.integrations:
+            return []
+        if self.auth_service is None:
+            raise ServiceException(500, "Auth service is not configured")
+
+        user = await self.auth_service.get_user(user_id)
+        providers_by_id = {provider.id: provider for provider in user.providers}
+        missing = [
+            str(integration.integration_id)
+            for integration in body.integrations
+            if integration.integration_id not in providers_by_id
+        ]
+        if missing:
+            raise ServiceException(404, f"Integration not found: {', '.join(missing)}")
+
+        return [
+            {
+                "integration_id": integration.integration_id,
+                "provider_id": providers_by_id[integration.integration_id].id,
+                "provider_name": providers_by_id[integration.integration_id].name,
+            }
+            for integration in body.integrations
+        ]
+
     async def submit_application(self, access: AccessData, event_id: UUID, body, user_id: UUID):
+        integrations = await self._resolve_application_integrations(body, user_id)
         return self._unwrap(
-            await self.event_repository.submit_application(access, event_id, body)
+            await self.event_repository.submit_application(
+                access, event_id, body, integrations
+            )
         )
 
     async def get_application(self, access: AccessData, application_id: UUID):

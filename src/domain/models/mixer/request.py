@@ -57,8 +57,6 @@ class AddOrganizerRequest(BaseModel):
 
 class IntegrationPayload(BaseModel):
     integration_id: UUID
-    provider_id: UUID
-    provider_name: str
 
 
 class FilledFieldPayload(BaseModel):

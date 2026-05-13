@@ -244,9 +244,13 @@ class MixerEventRepository:
         access: AccessData,
         event_id: UUID,
         body: BaseModel,
+        integrations: list[dict[str, object]] | None = None,
     ) -> ResponseMessage[ErrorResponse | ApplicationSubmitResult]:
+        data = body.model_dump()
+        if integrations is not None:
+            data["integrations"] = integrations
         request = SubmitApplicationRequest(
-            access_data=self._access_data(access), event_id=event_id, **body.model_dump()
+            access_data=self._access_data(access), event_id=event_id, **data
         )
         response = await rpc_request(self.rpc_client,
             request, queue="event.application.submit"
