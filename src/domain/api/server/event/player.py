@@ -10,7 +10,12 @@ from src.dependency import (
     PaginationDependency,
     RemapperServiceDependency,
 )
-from src.domain.models.mixer.request import EventPlayerStatus, UpdatePlayerStatusRequest
+from src.domain.models.mixer.request import (
+    AddPlayerRequest,
+    EventPlayerStatus,
+    UpdatePlayerRolesRequest,
+    UpdatePlayerStatusRequest,
+)
 from src.domain.models.mixer.response import (
     EventPlayerResponse,
     PlayerUpdateResultResponse,
@@ -117,3 +122,58 @@ async def remove_player(
 ):
     access = await get_access(server_id, user_id, member_service)
     return await event_service.remove_player(access, event_id, member_id)
+
+
+@router.post("/{event_id}/players", response_model=EventPlayerResponse, status_code=201)
+async def add_player(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    body: AddPlayerRequest,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+    custom_service: MemberCustomServiceDependency,
+    remapper_service: RemapperServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    result = await event_service.add_player(access, event_id, body)
+
+    member = await member_service.get_member(access, result.member_id)
+    member_info = {result.member_id: ReducedMemberResponse.model_validate(member)} if member else {}
+
+    custom_info: dict[UUID, CustomResponse] = {}
+    if result.custom_id:
+        try:
+            customs = await custom_service.get_customs_by_member(access, body.member_id)
+            for c in customs:
+                if c.id == result.custom_id:
+                    mapped = await remapper_service.map_customs_response([c])
+                    if mapped:
+                        custom_info[c.id] = mapped[0]
+                    break
+        except Exception:
+            pass
+
+    mapped = await remapper_service.map_players_response([result], member_info, custom_info)
+    return mapped[0]
+
+
+@router.put("/{event_id}/players/{member_id}/roles", response_model=EventPlayerResponse)
+async def update_player_roles(
+    user_id: AuthorizedUserID,
+    server_id: UUID,
+    event_id: UUID,
+    member_id: UUID,
+    body: UpdatePlayerRolesRequest,
+    event_service: MixerEventServiceDependency,
+    member_service: MemberServiceDependency,
+    remapper_service: RemapperServiceDependency,
+):
+    access = await get_access(server_id, user_id, member_service)
+    result = await event_service.update_player_roles(access, event_id, member_id, body)
+
+    member = await member_service.get_member(access, result.member_id)
+    member_info = {result.member_id: ReducedMemberResponse.model_validate(member)} if member else {}
+
+    mapped = await remapper_service.map_players_response([result], member_info)
+    return mapped[0]

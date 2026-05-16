@@ -212,6 +212,27 @@ class MixerEventService:
             await self.event_repository.remove_player(access, event_id, member_id)
         )
 
+    async def add_player(self, access: AccessData, event_id: UUID, body):
+        await self._ensure_member_exists(access, body.member_id)
+        if body.roles:
+            game_role_ids = {r.game_role_id for r in body.roles}
+            await self._ensure_game_roles_exist(access, game_role_ids)
+        return self._unwrap(
+            await self.event_repository.add_player(access, event_id, body)
+        )
+
+    async def update_player_roles(
+        self, access: AccessData, event_id: UUID, member_id: UUID, body
+    ):
+        await self._ensure_member_exists(access, member_id)
+        game_role_ids = {r.game_role_id for r in body.roles}
+        await self._ensure_game_roles_exist(access, game_role_ids)
+        return self._unwrap(
+            await self.event_repository.update_player_roles(
+                access, event_id, member_id, body
+            )
+        )
+
     async def create_draft(self, access: AccessData, event_id: UUID, body):
         return self._unwrap(
             await self.event_repository.create_draft(access, event_id, body)

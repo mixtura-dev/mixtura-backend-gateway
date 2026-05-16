@@ -25,6 +25,7 @@ from ..models.mixer.response import (
     DraftItemResponse,
     EventPlayerResponse,
     OrganizerResponse,
+    PlayerRoleResponse,
     PlayerUpdateResultResponse,
     RecordedMatchResultResponse,
     SingleMatchSlotViewResponse,
@@ -455,6 +456,10 @@ class PlayerMapper:
             mid = item.member_id
             member = context.member_info.get(mid)
             custom = context.custom_info.get(item.custom_id) if item.custom_id else None
+            roles = [
+                PlayerRoleResponse(game_role_id=r.game_role_id, priority=r.priority)
+                for r in item.roles
+            ]
             result.append(EventPlayerResponse(
                 id=item.id,
                 member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
@@ -462,6 +467,7 @@ class PlayerMapper:
                 is_draft_pinned=item.is_draft_pinned,
                 application_id=item.application_id,
                 custom=custom,
+                roles=roles,
             ))
         return result
 

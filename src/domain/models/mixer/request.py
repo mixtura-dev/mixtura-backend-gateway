@@ -115,6 +115,23 @@ class UpdatePlayerStatusRequest(BaseModel):
     custom_id: UUID | None = None
 
 
+class PlayerRolePayload(BaseModel):
+    game_role_id: UUID
+    priority: int
+
+
+class AddPlayerRequest(BaseModel):
+    member_id: UUID
+    application_id: UUID | None = None
+    custom_id: UUID | None = None
+    is_draft_pinned: bool = False
+    roles: list[PlayerRolePayload] | None = None
+
+
+class UpdatePlayerRolesRequest(BaseModel):
+    roles: list[PlayerRolePayload]
+
+
 class CreateDraftRequest(BaseModel):
     player_ids: list[UUID] | None = None
     statuses: list[EventPlayerStatus] | None = None

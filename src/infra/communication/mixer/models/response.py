@@ -309,6 +309,11 @@ class TeamDetail(BaseModel):
     players: list[TeamPlayerItem] = Field(default_factory=list)
 
 
+class PlayerRoleItem(BaseModel):
+    game_role_id: UUID
+    priority: int
+
+
 class PlayerItem(BaseModel):
     id: UUID
     member_id: UUID
@@ -316,6 +321,7 @@ class PlayerItem(BaseModel):
     is_draft_pinned: bool
     application_id: UUID | None = None
     custom_id: UUID | None = None
+    roles: list[PlayerRoleItem] = Field(default_factory=list)
 
 
 class PlayerUpdateResult(BaseModel):

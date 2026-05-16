@@ -10,6 +10,7 @@ from .models.request import (
     ActivateEventRequest,
     AddOrganizerRequest,
     AddIntegrationRequest,
+    AddPlayerRequest,
     RemoveIntegrationRequest,
     AddGameRoleRequest,
     UpdateGameRoleRequest,
@@ -17,6 +18,7 @@ from .models.request import (
     AddCustomFieldRequest,
     UpdateCustomFieldRequest,
     RemoveCustomFieldRequest,
+    UpdatePlayerRolesRequest,
     UpdateTimeSettingsRequest,
     ListEventsUnifiedRequest,
     GetApplicationFormSettingsRequest,
@@ -366,6 +368,33 @@ class MixerEventRepository:
         return ResponseMessage[ErrorResponse | StatusResponse].model_validate_json(
             response.body
         )
+
+    async def add_player(
+        self, access: AccessData, event_id: UUID, body: BaseModel
+    ) -> ResponseMessage[ErrorResponse | PlayerItem]:
+        request = AddPlayerRequest(
+            access_data=self._access_data(access),
+            event_id=event_id,
+            **body.model_dump(),
+        )
+        response = await rpc_request(self.rpc_client,
+            request, queue="event.player.add"
+        )
+        return ResponseMessage[ErrorResponse | PlayerItem].model_validate_json(response.body)
+
+    async def update_player_roles(
+        self, access: AccessData, event_id: UUID, member_id: UUID, body: BaseModel
+    ) -> ResponseMessage[ErrorResponse | PlayerItem]:
+        request = UpdatePlayerRolesRequest(
+            access_data=self._access_data(access),
+            event_id=event_id,
+            member_id=member_id,
+            **body.model_dump(),
+        )
+        response = await rpc_request(self.rpc_client,
+            request, queue="event.player.roles.update"
+        )
+        return ResponseMessage[ErrorResponse | PlayerItem].model_validate_json(response.body)
 
     async def create_draft(
         self, access: AccessData, event_id: UUID, body: BaseModel

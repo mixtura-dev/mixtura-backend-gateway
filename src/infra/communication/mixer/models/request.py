@@ -176,10 +176,32 @@ class UpdatePlayerStatusRequest(BaseModel):
     custom_id: UUID | None = None
 
 
+class RolePriorityInput(BaseModel):
+    game_role_id: UUID
+    priority: int
+
+
 class RemovePlayerRequest(BaseModel):
     access_data: AccessDataRequest
     event_id: UUID
     member_id: UUID
+
+
+class AddPlayerRequest(BaseModel):
+    access_data: AccessDataRequest
+    event_id: UUID
+    member_id: UUID
+    application_id: UUID | None = None
+    custom_id: UUID | None = None
+    is_draft_pinned: bool = False
+    roles: list[RolePriorityInput] | None = None
+
+
+class UpdatePlayerRolesRequest(BaseModel):
+    access_data: AccessDataRequest
+    event_id: UUID
+    member_id: UUID
+    roles: list[RolePriorityInput]
 
 
 class CreateDraftRequest(BaseModel):

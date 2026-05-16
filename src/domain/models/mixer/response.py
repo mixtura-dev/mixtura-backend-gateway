@@ -315,6 +315,11 @@ class TeamDetailResponse(BaseModel):
     players: list[TeamPlayerItemResponse] = Field(default_factory=list)
 
 
+class PlayerRoleResponse(BaseModel):
+    game_role_id: UUID
+    priority: int
+
+
 class EventPlayerResponse(BaseModel):
     id: UUID
     member: ReducedMemberResponse
@@ -322,6 +327,7 @@ class EventPlayerResponse(BaseModel):
     is_draft_pinned: bool
     application_id: UUID | None = None
     custom: CustomResponse | None = None
+    roles: list[PlayerRoleResponse] = Field(default_factory=list)
 
 
 class PlayerUpdateResultResponse(BaseModel):
