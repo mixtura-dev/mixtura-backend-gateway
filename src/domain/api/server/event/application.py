@@ -108,9 +108,33 @@ async def get_application(
     application_id: UUID,
     event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
+    auth_service: AuthServiceDependency,
+    remapper_service: RemapperServiceDependency,
 ):
     access = await get_access(server_id, user_id, member_service)
-    return await event_service.get_application(access, application_id)
+    application = await event_service.get_application(access, application_id)
+
+    member_info: dict[UUID, ReducedMemberResponse] = {}
+    try:
+        info = await member_service.get_member(access, application.member_id)
+        if info:
+            member_info[application.member_id] = ReducedMemberResponse.model_validate(info)
+    except Exception:
+        pass
+
+    user_ids = {m.user_id for m in member_info.values() if m.user_id}
+    user_info: dict[UUID, object] = {}
+    if user_ids:
+        try:
+            bulk_result = await auth_service.get_users_bulk(list(user_ids))
+            if isinstance(bulk_result, dict):
+                user_info = dict(bulk_result)
+        except Exception:
+            pass
+
+    return await remapper_service.map_application_detail_response(
+        application, member_info, user_info
+    )
 
 
 @router.patch("/applications/{application_id}/review", response_model=ReviewApplicationResponse)

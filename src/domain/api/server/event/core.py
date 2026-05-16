@@ -7,6 +7,7 @@ from src.dependency import (
     MemberServiceDependency,
     MixerEventServiceDependency,
     PaginationDependency,
+    RemapperServiceDependency,
 )
 from src.domain.models.mixer.request import (
     CreateEventRequest,
@@ -16,10 +17,29 @@ from src.domain.models.mixer.request import (
     UpdateGameRoleRequest,
 )
 from src.domain.models.mixer.response import EventCardResponse, EventDetailResponse
+from src.domain.models.server.member.response import ReducedMemberResponse
 
 from ._utils import get_access
 
 router = APIRouter(tags=["Event Core"])
+
+
+async def _enrich_event_organizers(event, access, member_service, remapper_service):
+    if not event.organizers:
+        return event
+    member_ids = {org.member_id for org in event.organizers}
+    member_info: dict[UUID, ReducedMemberResponse] = {}
+    for member_id in member_ids:
+        try:
+            info = await member_service.get_member(access, member_id)
+            if info:
+                member_info[member_id] = ReducedMemberResponse.model_validate(info)
+        except Exception:
+            pass
+    event.organizers = await remapper_service.map_event_detail_organizers(
+        event.organizers, member_info
+    )
+    return event
 
 
 @router.get("/", response_model=list[EventCardResponse])
@@ -40,9 +60,11 @@ async def create_event(
     body: CreateEventRequest,
     event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
+    remapper_service: RemapperServiceDependency,
 ):
     access = await get_access(server_id, user_id, member_service)
-    return await event_service.create_event(access, body)
+    result = await event_service.create_event(access, body)
+    return await _enrich_event_organizers(result, access, member_service, remapper_service)
 
 
 @router.get("/{event_id}", response_model=EventDetailResponse)
@@ -52,9 +74,11 @@ async def get_event(
     event_id: UUID,
     event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
+    remapper_service: RemapperServiceDependency,
 ):
     access = await get_access(server_id, user_id, member_service)
-    return await event_service.get_event(access, event_id)
+    result = await event_service.get_event(access, event_id)
+    return await _enrich_event_organizers(result, access, member_service, remapper_service)
 
 
 @router.patch("/{event_id}", response_model=EventDetailResponse)

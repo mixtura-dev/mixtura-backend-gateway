@@ -8,13 +8,14 @@ from src.dependency import (
     MixerEventServiceDependency,
     PaginationDependency,
 )
+from src.domain.models.mixer.response import TeamItemResponse
 
 from ._utils import get_access
 
 router = APIRouter(tags=["Event Team"])
 
 
-@router.get("/{event_id}/teams", response_model=list[dict])
+@router.get("/{event_id}/teams", response_model=list[TeamItemResponse])
 async def list_teams(
     user_id: AuthorizedUserID,
     server_id: UUID,

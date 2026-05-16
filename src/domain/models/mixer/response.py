@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from src.domain.models.server.member.response import ReducedMemberResponse
+from src.domain.models.server.custom.response import CustomResponse
 
 
 class EventMatchType(str, Enum):
@@ -262,3 +263,68 @@ class ApplicationFormSettingsResponse(BaseModel):
     available_roles: list[SelectedGameRoleResponse] = Field(default_factory=list)
     custom_fields: list[ApplicationCustomFieldResponse] = Field(default_factory=list)
     time_settings: ApplicationTimeSettingsResponse | None = None
+
+
+class DraftStatus(str, Enum):
+    OPEN = "OPEN"
+    BALANCE_REQUESTED = "BALANCE_REQUESTED"
+    BALANCE_SELECTED = "BALANCE_SELECTED"
+    COMPLETED = "COMPLETED"
+
+
+class DraftedPlayerItemResponse(BaseModel):
+    id: UUID
+    draft_id: UUID
+    event_player_id: UUID
+    is_captain: bool
+
+
+class DraftDetailResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    status: str
+    drafted_players: list[DraftedPlayerItemResponse] = Field(default_factory=list)
+
+
+class DraftItemResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    status: str
+
+
+class TeamItemResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    draft_id: UUID | None = None
+    name: str
+
+
+class TeamPlayerItemResponse(BaseModel):
+    id: UUID
+    team_id: UUID
+    member_id: UUID
+    game_role_id: UUID
+    rating: int
+
+
+class TeamDetailResponse(BaseModel):
+    id: UUID
+    event_id: UUID
+    draft_id: UUID
+    name: str
+    players: list[TeamPlayerItemResponse] = Field(default_factory=list)
+
+
+class EventPlayerResponse(BaseModel):
+    id: UUID
+    member: ReducedMemberResponse
+    status: str
+    is_draft_pinned: bool
+    application_id: UUID | None = None
+
+
+class PlayerUpdateResultResponse(BaseModel):
+    id: UUID
+    member: ReducedMemberResponse
+    status: str
+    custom: CustomResponse | None = None

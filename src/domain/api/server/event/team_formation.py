@@ -9,7 +9,10 @@ from src.dependency import (
     PaginationDependency,
 )
 from src.domain.models.mixer.request import RunTeamFormationRequest
-from src.domain.models.mixer.response import TeamFormationJobResponse
+from src.domain.models.mixer.response import (
+    TeamDetailResponse,
+    TeamFormationJobResponse,
+)
 
 from ._utils import get_access
 
@@ -48,7 +51,10 @@ async def get_team_formation(
     )
 
 
-@router.post("/drafts/{draft_id}/team-formation/variants/{variant_id}/choose")
+@router.post(
+    "/drafts/{draft_id}/team-formation/variants/{variant_id}/choose",
+    response_model=list[TeamDetailResponse],
+)
 async def choose_team_formation_variant(
     user_id: AuthorizedUserID,
     server_id: UUID,

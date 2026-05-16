@@ -12,10 +12,23 @@ from ..models.server.game_roles.response import (
 from ..models.server.rating.response import RatingItemResponse, RatingSetResponse
 from ..models.server.games.response import GameResponse
 from ..models.mixer.response import (
+    ApplicationDetailResponse,
+    ApplicationFilledFieldResponse,
+    ApplicationIntegrationItemResponse,
+    ApplicationIntegrationResponse,
     ApplicationListItemResponse,
     ApplicationListItemUserResponse,
     ApplicationRoleItemResponse,
-    ApplicationIntegrationItemResponse,
+    ApplicationRolePriorityResponse,
+    DraftDetailResponse,
+    DraftedPlayerItemResponse,
+    DraftItemResponse,
+    EventPlayerResponse,
+    OrganizerResponse,
+    PlayerUpdateResultResponse,
+    RecordedMatchResultResponse,
+    SingleMatchSlotViewResponse,
+    SingleMatchViewResponse,
 )
 
 import src.infra.communication.server.models.core.response as CommunicationCoreResponses
@@ -32,6 +45,7 @@ class MappingContext:
     member_info: dict[UUID, ReducedMemberResponse] = field(default_factory=dict)
     user_info: dict[UUID, object] = field(default_factory=dict)
     integration_names: dict[UUID, str] = field(default_factory=dict)
+    custom_info: dict[UUID, CustomResponse] = field(default_factory=dict)
 
 
 class RatingItemMapper:
@@ -420,6 +434,237 @@ class ApplicationMapper:
         return result
 
 
+class PlayerMapper:
+    def extract_member_ids(
+        self, items: list[CommunicationMixerResponses.PlayerItem],
+    ) -> set[UUID]:
+        return {item.member_id for item in items}
+
+    def extract_custom_ids(
+        self, items: list[CommunicationMixerResponses.PlayerUpdateResult],
+    ) -> set[UUID]:
+        return {item.custom_id for item in items if item.custom_id}
+
+    def map_players(
+        self,
+        items: list[CommunicationMixerResponses.PlayerItem],
+        context: MappingContext,
+    ) -> list[EventPlayerResponse]:
+        result: list[EventPlayerResponse] = []
+        for item in items:
+            mid = item.member_id
+            member = context.member_info.get(mid)
+            result.append(EventPlayerResponse(
+                id=item.id,
+                member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
+                status=item.status,
+                is_draft_pinned=item.is_draft_pinned,
+                application_id=item.application_id,
+            ))
+        return result
+
+    def map_update_result(
+        self,
+        item: CommunicationMixerResponses.PlayerUpdateResult,
+        context: MappingContext,
+    ) -> PlayerUpdateResultResponse:
+        mid = item.member_id
+        member = context.member_info.get(mid)
+        custom = context.custom_info.get(item.custom_id) if item.custom_id else None
+        return PlayerUpdateResultResponse(
+            id=item.id,
+            member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
+            status=item.status,
+            custom=custom,
+        )
+
+
+class DraftMapper:
+    def map_detail(
+        self,
+        item: CommunicationMixerResponses.DraftDetail,
+    ) -> DraftDetailResponse:
+        drafted_players = [
+            DraftedPlayerItemResponse(
+                id=p.id,
+                draft_id=p.draft_id,
+                event_player_id=p.event_player_id,
+                is_captain=p.is_captain,
+            )
+            for p in item.drafted_players
+        ]
+        return DraftDetailResponse(
+            id=item.id,
+            event_id=item.event_id,
+            status=item.status.value if hasattr(item.status, 'value') else item.status,
+            drafted_players=drafted_players,
+        )
+
+    def map_items(
+        self,
+        items: list[CommunicationMixerResponses.DraftItem],
+    ) -> list[DraftItemResponse]:
+        return [
+            DraftItemResponse(
+                id=item.id,
+                event_id=item.event_id,
+                status=item.status.value if hasattr(item.status, 'value') else item.status,
+            )
+            for item in items
+        ]
+
+
+class EventDetailOrganizerMapper:
+    def extract_member_ids(
+        self, organizers: list[CommunicationMixerResponses.OrganizerData],
+    ) -> set[UUID]:
+        return {org.member_id for org in organizers}
+
+    def map(
+        self,
+        organizers: list[CommunicationMixerResponses.OrganizerData],
+        context: MappingContext,
+    ) -> list[OrganizerResponse]:
+        result: list[OrganizerResponse] = []
+        for org in organizers:
+            member = context.member_info.get(org.member_id)
+            result.append(OrganizerResponse(
+                id=org.id,
+                member_id=org.member_id,
+            ))
+        return result
+
+
+class ApplicationDetailMapper:
+    def extract_member_ids(
+        self, item: CommunicationMixerResponses.ApplicationDetail,
+    ) -> set[UUID]:
+        return {item.member_id}
+
+    def map(
+        self,
+        item: CommunicationMixerResponses.ApplicationDetail,
+        context: MappingContext,
+    ) -> ApplicationDetailResponse:
+        mid = item.member_id
+        member = context.member_info.get(mid)
+        uid = member.user_id if member and member.user_id else None
+        user_obj = context.user_info.get(uid) if uid else None
+        user_info = None
+        if user_obj:
+            user_info = ApplicationListItemUserResponse(
+                id=getattr(user_obj, "id", uid),
+                username=getattr(user_obj, "username", None),
+            )
+
+        role_priorities = [
+            ApplicationRolePriorityResponse(
+                role_id=rp.role_id,
+                priority=rp.priority,
+            )
+            for rp in item.role_priorities
+        ]
+
+        integrations = [
+            ApplicationIntegrationResponse(
+                integration_id=inv.integration_id,
+                provider_id=inv.provider_id,
+                provider_name=inv.provider_name,
+            )
+            for inv in item.integrations
+        ]
+
+        return ApplicationDetailResponse(
+            id=item.id,
+            event_id=item.event_id,
+            member_id=mid,
+            status=item.status.value if hasattr(item.status, 'value') else item.status,
+            role_priorities=role_priorities,
+            filled_fields=[
+                ApplicationFilledFieldResponse(
+                    custom_field_id=ff.custom_field_id,
+                    value=ff.value,
+                )
+                for ff in item.filled_fields
+            ],
+            integrations=integrations,
+            event_player_id=item.event_player_id,
+        )
+
+
+class MatchMapper:
+    def extract_team_ids_from_view(
+        self, matches: list[CommunicationMixerResponses.SingleMatchView],
+    ) -> set[UUID]:
+        ids: set[UUID] = set()
+        for match in matches:
+            for slot in match.slots:
+                ids.add(slot.team_id)
+            if match.result_snapshot and isinstance(match.result_snapshot, dict):
+                winner_id = match.result_snapshot.get("winner_team_id")
+                if winner_id:
+                    ids.add(winner_id)
+                loser_ids = match.result_snapshot.get("loser_team_ids", [])
+                for tid in loser_ids:
+                    ids.add(tid)
+        return ids
+
+    def extract_team_ids_from_result(
+        self, result: CommunicationMixerResponses.RecordedMatchResult,
+    ) -> set[UUID]:
+        ids: set[UUID] = set()
+        if result.winner_team_id:
+            ids.add(result.winner_team_id)
+        for tid in result.loser_team_ids:
+            ids.add(tid)
+        for slot in result.match.slots:
+            ids.add(slot.team_id)
+        return ids
+
+    def map_single_view(
+        self,
+        match: CommunicationMixerResponses.SingleMatchView,
+        context: MappingContext,
+    ) -> SingleMatchViewResponse:
+        return SingleMatchViewResponse(
+            event_id=match.event_id,
+            bracket_id=match.bracket_id,
+            stage_id=match.stage_id,
+            group_id=match.group_id,
+            match_id=match.match_id,
+            match_index=match.match_index,
+            draft_id=match.draft_id,
+            completed_at=match.completed_at,
+            result_snapshot=match.result_snapshot,
+            slots=[
+                SingleMatchSlotViewResponse(
+                    slot_id=s.slot_id,
+                    slot_num=s.slot_num,
+                    team_id=s.team_id,
+                    score_id=s.score_id,
+                    score=s.score,
+                )
+                for s in match.slots
+            ],
+        )
+
+    def map_result(
+        self,
+        result: CommunicationMixerResponses.RecordedMatchResult,
+        context: MappingContext,
+    ) -> RecordedMatchResultResponse:
+        return RecordedMatchResultResponse(
+            match=self.map_single_view(result.match, context),
+            winner_team_id=result.winner_team_id,
+            loser_team_ids=result.loser_team_ids,
+            is_draw=result.is_draw,
+            forfeit_team_ids=result.forfeit_team_ids,
+            team_ranks=result.team_ranks,
+            rating_payload=result.rating_payload,
+            rating_published=result.rating_published,
+        )
+
+
 class RemapperService:
     async def _fetch_file_urls(self, file_ids: set[str]) -> dict[str, str]:
         # TODO : implement actual file URL fetching logic
@@ -515,3 +760,69 @@ class RemapperService:
         mapper = ApplicationMapper()
         context = MappingContext(member_info=member_info, user_info=user_info, integration_names=integration_names)
         return mapper.map(applications, context)
+
+    async def map_players_response(
+        self,
+        players: list[CommunicationMixerResponses.PlayerItem],
+        member_info: dict[UUID, ReducedMemberResponse],
+    ) -> list[EventPlayerResponse]:
+        mapper = PlayerMapper()
+        context = MappingContext(member_info=member_info)
+        return mapper.map_players(players, context)
+
+    async def map_player_update_result_response(
+        self,
+        result: CommunicationMixerResponses.PlayerUpdateResult,
+        member_info: dict[UUID, ReducedMemberResponse],
+        custom_info: dict[UUID, CustomResponse],
+    ) -> PlayerUpdateResultResponse:
+        mapper = PlayerMapper()
+        context = MappingContext(member_info=member_info, custom_info=custom_info)
+        return mapper.map_update_result(result, context)
+
+    async def map_draft_detail_response(
+        self, draft: CommunicationMixerResponses.DraftDetail,
+    ) -> DraftDetailResponse:
+        mapper = DraftMapper()
+        return mapper.map_detail(draft)
+
+    async def map_draft_items_response(
+        self, drafts: list[CommunicationMixerResponses.DraftItem],
+    ) -> list[DraftItemResponse]:
+        mapper = DraftMapper()
+        return mapper.map_items(drafts)
+
+    async def map_event_detail_organizers(
+        self,
+        organizers: list[CommunicationMixerResponses.OrganizerData],
+        member_info: dict[UUID, ReducedMemberResponse],
+    ) -> list[OrganizerResponse]:
+        mapper = EventDetailOrganizerMapper()
+        context = MappingContext(member_info=member_info)
+        return mapper.map(organizers, context)
+
+    async def map_application_detail_response(
+        self,
+        application: CommunicationMixerResponses.ApplicationDetail,
+        member_info: dict[UUID, ReducedMemberResponse],
+        user_info: dict[UUID, object],
+    ) -> ApplicationDetailResponse:
+        mapper = ApplicationDetailMapper()
+        context = MappingContext(member_info=member_info, user_info=user_info)
+        return mapper.map(application, context)
+
+    async def map_match_view_response(
+        self,
+        match: CommunicationMixerResponses.SingleMatchView,
+    ) -> SingleMatchViewResponse:
+        mapper = MatchMapper()
+        context = MappingContext()
+        return mapper.map_single_view(match, context)
+
+    async def map_match_result_response(
+        self,
+        result: CommunicationMixerResponses.RecordedMatchResult,
+    ) -> RecordedMatchResultResponse:
+        mapper = MatchMapper()
+        context = MappingContext()
+        return mapper.map_result(result, context)

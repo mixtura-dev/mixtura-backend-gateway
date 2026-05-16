@@ -112,6 +112,7 @@ class ReviewApplicationRequest(BaseModel):
 
 class UpdatePlayerStatusRequest(BaseModel):
     status: EventPlayerStatus
+    custom_id: UUID | None = None
 
 
 class CreateDraftRequest(BaseModel):

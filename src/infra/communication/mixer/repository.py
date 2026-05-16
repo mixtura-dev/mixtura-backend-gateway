@@ -56,15 +56,21 @@ from .models.response import (
     ApplicationListItem,
     ApplicationReviewResult,
     ApplicationSubmitResult,
+    DraftDetail,
+    DraftItem,
     ErrorResponse,
     EventCard,
     EventDetail,
     OrganizerItem,
+    PlayerItem,
+    PlayerUpdateResult,
     RecordedMatchResult,
     ResponseMessage,
     SingleMatchView,
     StatusResponse,
+    TeamDetail,
     TeamFormationJob,
+    TeamItem,
 )
 
 
@@ -314,7 +320,7 @@ class MixerEventRepository:
         event_id: UUID,
         status: str | None,
         pagination: PaginationRequest,
-    ) -> ResponseMessage[ErrorResponse | list[dict]]:
+    ) -> ResponseMessage[ErrorResponse | list[PlayerItem]]:
         request = ListPlayersRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -324,7 +330,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.player.list"
         )
-        return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[PlayerItem]].model_validate_json(
             response.body
         )
 
@@ -334,7 +340,7 @@ class MixerEventRepository:
         event_id: UUID,
         member_id: UUID,
         body: BaseModel,
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | PlayerUpdateResult]:
         request = UpdatePlayerStatusRequest(
             access_data=self._access_data(access),
             event_id=event_id,
@@ -344,7 +350,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.player.status.update"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | PlayerUpdateResult].model_validate_json(response.body)
 
     async def remove_player(
         self, access: AccessData, event_id: UUID, member_id: UUID
@@ -363,27 +369,27 @@ class MixerEventRepository:
 
     async def create_draft(
         self, access: AccessData, event_id: UUID, body: BaseModel
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | DraftDetail]:
         request = CreateDraftRequest(
             access_data=self._access_data(access), event_id=event_id, **body.model_dump()
         )
         response = await rpc_request(self.rpc_client,
             request, queue="event.draft.create"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | DraftDetail].model_validate_json(response.body)
 
     async def get_draft(
         self, access: AccessData, draft_id: UUID
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | DraftDetail]:
         request = GetDraftRequest(draft_id=draft_id, access_data=self._access_data(access))
         response = await rpc_request(self.rpc_client,
             request, queue="event.draft.get"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | DraftDetail].model_validate_json(response.body)
 
     async def list_drafts(
         self, access: AccessData, event_id: UUID, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[dict]]:
+    ) -> ResponseMessage[ErrorResponse | list[DraftItem]]:
         request = ListDraftsRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -392,7 +398,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.draft.list"
         )
-        return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[DraftItem]].model_validate_json(
             response.body
         )
 
@@ -426,7 +432,7 @@ class MixerEventRepository:
 
     async def choose_team_formation_variant(
         self, access: AccessData, draft_id: UUID, variant_id: UUID
-    ) -> ResponseMessage[ErrorResponse | dict]:
+    ) -> ResponseMessage[ErrorResponse | list[TeamDetail]]:
         request = ChooseTeamFormationVariantRequest(
             access_data=self._access_data(access),
             draft_id=draft_id,
@@ -435,11 +441,11 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.team_formation.choose"
         )
-        return ResponseMessage[ErrorResponse | dict].model_validate_json(response.body)
+        return ResponseMessage[ErrorResponse | list[TeamDetail]].model_validate_json(response.body)
 
     async def list_teams(
         self, access: AccessData, event_id: UUID, pagination: PaginationRequest
-    ) -> ResponseMessage[ErrorResponse | list[dict]]:
+    ) -> ResponseMessage[ErrorResponse | list[TeamItem]]:
         request = ListTeamsRequest(
             event_id=event_id,
             access_data=self._access_data(access),
@@ -448,7 +454,7 @@ class MixerEventRepository:
         response = await rpc_request(self.rpc_client,
             request, queue="event.team.list"
         )
-        return ResponseMessage[ErrorResponse | list[dict]].model_validate_json(
+        return ResponseMessage[ErrorResponse | list[TeamItem]].model_validate_json(
             response.body
         )
 

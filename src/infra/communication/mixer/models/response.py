@@ -257,3 +257,68 @@ class RecordedMatchResult(BaseModel):
     team_ranks: list[float]
     rating_payload: dict
     rating_published: bool
+
+
+class DraftStatus(str, Enum):
+    OPEN = "OPEN"
+    BALANCE_REQUESTED = "BALANCE_REQUESTED"
+    BALANCE_SELECTED = "BALANCE_SELECTED"
+    COMPLETED = "COMPLETED"
+
+
+class DraftedPlayerItem(BaseModel):
+    id: UUID
+    draft_id: UUID
+    event_player_id: UUID
+    is_captain: bool
+
+
+class DraftDetail(BaseModel):
+    id: UUID
+    event_id: UUID
+    status: DraftStatus
+    drafted_players: list[DraftedPlayerItem] = Field(default_factory=list)
+
+
+class DraftItem(BaseModel):
+    id: UUID
+    event_id: UUID
+    status: DraftStatus
+
+
+class TeamItem(BaseModel):
+    id: UUID
+    event_id: UUID
+    draft_id: UUID | None = None
+    name: str
+
+
+class TeamPlayerItem(BaseModel):
+    id: UUID
+    team_id: UUID
+    member_id: UUID
+    game_role_id: UUID
+    rating: int
+
+
+class TeamDetail(BaseModel):
+    id: UUID
+    event_id: UUID
+    draft_id: UUID
+    name: str
+    players: list[TeamPlayerItem] = Field(default_factory=list)
+
+
+class PlayerItem(BaseModel):
+    id: UUID
+    member_id: UUID
+    status: str
+    is_draft_pinned: bool
+    application_id: UUID | None = None
+
+
+class PlayerUpdateResult(BaseModel):
+    id: UUID
+    member_id: UUID
+    status: str
+    custom_id: UUID | None = None
