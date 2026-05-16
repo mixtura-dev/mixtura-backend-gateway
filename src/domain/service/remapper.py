@@ -441,7 +441,7 @@ class PlayerMapper:
         return {item.member_id for item in items}
 
     def extract_custom_ids(
-        self, items: list[CommunicationMixerResponses.PlayerUpdateResult],
+        self, items: list[CommunicationMixerResponses.PlayerItem | CommunicationMixerResponses.PlayerUpdateResult],
     ) -> set[UUID]:
         return {item.custom_id for item in items if item.custom_id}
 
@@ -454,12 +454,14 @@ class PlayerMapper:
         for item in items:
             mid = item.member_id
             member = context.member_info.get(mid)
+            custom = context.custom_info.get(item.custom_id) if item.custom_id else None
             result.append(EventPlayerResponse(
                 id=item.id,
                 member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
                 status=item.status,
                 is_draft_pinned=item.is_draft_pinned,
                 application_id=item.application_id,
+                custom=custom,
             ))
         return result
 
@@ -765,9 +767,10 @@ class RemapperService:
         self,
         players: list[CommunicationMixerResponses.PlayerItem],
         member_info: dict[UUID, ReducedMemberResponse],
+        custom_info: dict[UUID, CustomResponse] | None = None,
     ) -> list[EventPlayerResponse]:
         mapper = PlayerMapper()
-        context = MappingContext(member_info=member_info)
+        context = MappingContext(member_info=member_info, custom_info=custom_info or {})
         return mapper.map_players(players, context)
 
     async def map_player_update_result_response(

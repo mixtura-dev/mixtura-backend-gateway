@@ -321,6 +321,7 @@ class EventPlayerResponse(BaseModel):
     status: str
     is_draft_pinned: bool
     application_id: UUID | None = None
+    custom: CustomResponse | None = None
 
 
 class PlayerUpdateResultResponse(BaseModel):

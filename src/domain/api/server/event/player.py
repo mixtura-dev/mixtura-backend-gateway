@@ -31,6 +31,7 @@ async def list_players(
     event_id: UUID,
     event_service: MixerEventServiceDependency,
     member_service: MemberServiceDependency,
+    custom_service: MemberCustomServiceDependency,
     remapper_service: RemapperServiceDependency,
     pagination: PaginationDependency,
     status: EventPlayerStatus | None = None,
@@ -50,7 +51,23 @@ async def list_players(
         except Exception:
             pass
 
-    return await remapper_service.map_players_response(players, member_info)
+    custom_info: dict[UUID, CustomResponse] = {}
+    per_member_custom_ids: dict[UUID, set[UUID]] = {}
+    for p in players:
+        if p.custom_id:
+            per_member_custom_ids.setdefault(p.member_id, set()).add(p.custom_id)
+    for member_id, target_custom_ids in per_member_custom_ids.items():
+        try:
+            customs = await custom_service.get_customs_by_member(access, member_id)
+            for c in customs:
+                if c.id in target_custom_ids:
+                    mapped = await remapper_service.map_customs_response([c])
+                    if mapped:
+                        custom_info[c.id] = mapped[0]
+        except Exception:
+            pass
+
+    return await remapper_service.map_players_response(players, member_info, custom_info)
 
 
 @router.patch("/{event_id}/players/{member_id}/status", response_model=PlayerUpdateResultResponse)

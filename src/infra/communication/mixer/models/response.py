@@ -315,6 +315,7 @@ class PlayerItem(BaseModel):
     status: str
     is_draft_pinned: bool
     application_id: UUID | None = None
+    custom_id: UUID | None = None
 
 
 class PlayerUpdateResult(BaseModel):
