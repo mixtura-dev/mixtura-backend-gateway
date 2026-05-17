@@ -9,10 +9,7 @@ from src.dependency import (
     PaginationDependency,
 )
 from src.domain.models.mixer.request import RecordMatchResultRequest, SetupMatchRequest
-from src.domain.models.mixer.response import (
-    RecordedMatchResultResponse,
-    SingleMatchViewResponse,
-)
+from src.domain.models.mixer.response import SingleMatchViewResponse
 
 from ._utils import get_access
 
@@ -63,7 +60,7 @@ async def get_match(
 
 
 @router.post(
-    "/matches/{match_id}/result", response_model=RecordedMatchResultResponse
+    "/matches/{match_id}/result", response_model=SingleMatchViewResponse
 )
 async def record_match_result(
     user_id: AuthorizedUserID,

@@ -244,19 +244,7 @@ class SingleMatchView(BaseModel):
     match_index: int
     draft_id: UUID | None = None
     completed_at: datetime | None = None
-    result_snapshot: dict | None = None
     slots: list[SingleMatchSlotView]
-
-
-class RecordedMatchResult(BaseModel):
-    match: SingleMatchView
-    winner_team_id: UUID | None = None
-    loser_team_ids: list[UUID] = Field(default_factory=list)
-    is_draw: bool = False
-    forfeit_team_ids: list[UUID] = Field(default_factory=list)
-    team_ranks: list[float]
-    rating_payload: dict
-    rating_published: bool
 
 
 class DraftStatus(str, Enum):

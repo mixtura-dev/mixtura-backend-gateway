@@ -13,7 +13,6 @@ from .request import (
 from .response import (
     EventCardResponse,
     EventDetailResponse,
-    RecordedMatchResultResponse,
     SingleMatchViewResponse,
     TeamFormationJobResponse,
 )
@@ -25,7 +24,6 @@ __all__ = [
     "EventCardResponse",
     "EventDetailResponse",
     "RecordMatchResultRequest",
-    "RecordedMatchResultResponse",
     "ReviewApplicationRequest",
     "RunTeamFormationRequest",
     "SetupMatchRequest",

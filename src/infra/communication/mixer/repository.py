@@ -66,7 +66,6 @@ from .models.response import (
     OrganizerItem,
     PlayerItem,
     PlayerUpdateResult,
-    RecordedMatchResult,
     ResponseMessage,
     SingleMatchView,
     StatusResponse,
@@ -502,7 +501,7 @@ class MixerEventRepository:
 
     async def record_match_result(
         self, access: AccessData, match_id: UUID, body: BaseModel
-    ) -> ResponseMessage[ErrorResponse | RecordedMatchResult]:
+    ) -> ResponseMessage[ErrorResponse | SingleMatchView]:
         request = RecordMatchResultRequest(
             access_data=self._access_data(access), match_id=match_id, **body.model_dump()
         )
@@ -510,7 +509,7 @@ class MixerEventRepository:
             request, queue="event.match.result.record"
         )
         return ResponseMessage[
-            ErrorResponse | RecordedMatchResult
+            ErrorResponse | SingleMatchView
         ].model_validate_json(response.body)
 
     async def get_match(

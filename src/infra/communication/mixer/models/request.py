@@ -271,10 +271,6 @@ class RecordMatchResultRequest(BaseModel):
     access_data: AccessDataRequest
     match_id: UUID
     scores: dict[UUID, int]
-    winner_id: UUID | None = None
-    is_draw: bool = False
-    forfeit_team_ids: list[UUID] = Field(default_factory=list)
-    rating_settings: dict[str, str | int | float | bool | None] | None = None
 
 
 class GetMatchRequest(BaseModel):

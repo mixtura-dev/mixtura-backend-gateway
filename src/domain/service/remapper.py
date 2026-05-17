@@ -27,7 +27,6 @@ from ..models.mixer.response import (
     OrganizerResponse,
     PlayerRoleResponse,
     PlayerUpdateResultResponse,
-    RecordedMatchResultResponse,
     SingleMatchSlotViewResponse,
     SingleMatchViewResponse,
 )
@@ -608,25 +607,6 @@ class MatchMapper:
         for match in matches:
             for slot in match.slots:
                 ids.add(slot.team_id)
-            if match.result_snapshot and isinstance(match.result_snapshot, dict):
-                winner_id = match.result_snapshot.get("winner_team_id")
-                if winner_id:
-                    ids.add(winner_id)
-                loser_ids = match.result_snapshot.get("loser_team_ids", [])
-                for tid in loser_ids:
-                    ids.add(tid)
-        return ids
-
-    def extract_team_ids_from_result(
-        self, result: CommunicationMixerResponses.RecordedMatchResult,
-    ) -> set[UUID]:
-        ids: set[UUID] = set()
-        if result.winner_team_id:
-            ids.add(result.winner_team_id)
-        for tid in result.loser_team_ids:
-            ids.add(tid)
-        for slot in result.match.slots:
-            ids.add(slot.team_id)
         return ids
 
     def map_single_view(
@@ -643,7 +623,6 @@ class MatchMapper:
             match_index=match.match_index,
             draft_id=match.draft_id,
             completed_at=match.completed_at,
-            result_snapshot=match.result_snapshot,
             slots=[
                 SingleMatchSlotViewResponse(
                     slot_id=s.slot_id,
@@ -656,21 +635,6 @@ class MatchMapper:
             ],
         )
 
-    def map_result(
-        self,
-        result: CommunicationMixerResponses.RecordedMatchResult,
-        context: MappingContext,
-    ) -> RecordedMatchResultResponse:
-        return RecordedMatchResultResponse(
-            match=self.map_single_view(result.match, context),
-            winner_team_id=result.winner_team_id,
-            loser_team_ids=result.loser_team_ids,
-            is_draw=result.is_draw,
-            forfeit_team_ids=result.forfeit_team_ids,
-            team_ranks=result.team_ranks,
-            rating_payload=result.rating_payload,
-            rating_published=result.rating_published,
-        )
 
 
 class RemapperService:
@@ -827,11 +791,3 @@ class RemapperService:
         mapper = MatchMapper()
         context = MappingContext()
         return mapper.map_single_view(match, context)
-
-    async def map_match_result_response(
-        self,
-        result: CommunicationMixerResponses.RecordedMatchResult,
-    ) -> RecordedMatchResultResponse:
-        mapper = MatchMapper()
-        context = MappingContext()
-        return mapper.map_result(result, context)
