@@ -204,7 +204,6 @@ class ApplicationListItemResponse(BaseModel):
     id: UUID
     member_id: UUID
     status: ApplicationStatusResponse
-    is_approved: bool
     created_at: datetime
     user: ApplicationListItemUserResponse | None = None
     roles: list[ApplicationRoleItemResponse] = []

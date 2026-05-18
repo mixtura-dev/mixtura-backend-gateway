@@ -425,7 +425,6 @@ class ApplicationMapper:
                 id=item.id,
                 member_id=mid,
                 status=item.status.value,
-                is_approved=item.is_approved,
                 created_at=item.created_at,
                 user=user_info,
                 roles=roles,
