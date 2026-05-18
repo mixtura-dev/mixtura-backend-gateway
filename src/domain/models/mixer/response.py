@@ -46,7 +46,7 @@ class OrganizerItemResponse(BaseModel):
 
 class RequiredIntegrationResponse(BaseModel):
     id: UUID
-    name: str
+    provider_id: UUID
 
 
 class SelectedGameRoleResponse(BaseModel):
@@ -259,11 +259,19 @@ class DraftStatus(str, Enum):
     COMPLETED = "COMPLETED"
 
 
+class EventPlayerStatus(str, Enum):
+    REGISTERED = "REGISTERED"
+    SELECTED = "SELECTED"
+    PLAYING = "PLAYING"
+    COMPLETED = "COMPLETED"
+    BENCHED = "BENCHED"
+
+
 class DraftedPlayerItemResponse(BaseModel):
     id: UUID
     draft_id: UUID
     event_player_id: UUID
-    is_captain: bool
+    is_captain: bool | None = None
 
 
 class DraftDetailResponse(BaseModel):
@@ -291,13 +299,13 @@ class TeamPlayerItemResponse(BaseModel):
     team_id: UUID
     member_id: UUID
     game_role_id: UUID
-    rating: int
+    rating: float
 
 
 class TeamDetailResponse(BaseModel):
     id: UUID
     event_id: UUID
-    draft_id: UUID
+    draft_id: UUID | None = None
     name: str
     players: list[TeamPlayerItemResponse] = Field(default_factory=list)
 
@@ -310,7 +318,7 @@ class PlayerRoleResponse(BaseModel):
 class EventPlayerResponse(BaseModel):
     id: UUID
     member: ReducedMemberResponse
-    status: str
+    status: EventPlayerStatus
     is_draft_pinned: bool
     application_id: UUID | None = None
     custom: CustomResponse | None = None
@@ -320,5 +328,5 @@ class EventPlayerResponse(BaseModel):
 class PlayerUpdateResultResponse(BaseModel):
     id: UUID
     member: ReducedMemberResponse
-    status: str
+    status: EventPlayerStatus
     custom: CustomResponse | None = None
