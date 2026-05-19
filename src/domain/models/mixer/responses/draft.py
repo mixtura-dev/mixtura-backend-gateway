@@ -15,11 +15,11 @@ class DraftedPlayerItemResponse(BaseModel):
 class DraftDetailResponse(BaseModel):
     id: UUID
     event_id: UUID
-    status: str
+    status: DraftStatus
     drafted_players: list[DraftedPlayerItemResponse] = Field(default_factory=list)
 
 
 class DraftItemResponse(BaseModel):
     id: UUID
     event_id: UUID
-    status: str
+    status: DraftStatus

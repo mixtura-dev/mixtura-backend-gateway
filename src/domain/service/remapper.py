@@ -11,7 +11,7 @@ from ..models.server.game_roles.response import (
 )
 from ..models.server.rating.response import RatingItemResponse, RatingSetResponse
 from ..models.server.games.response import GameResponse
-from ..models.mixer.enums import ApplicationStatus, EventPlayerStatus
+from ..models.mixer.enums import ApplicationStatus, DraftStatus, EventPlayerStatus
 from ..models.mixer.responses import (
     ApplicationDetailResponse,
     ApplicationFilledFieldResponse,
@@ -504,7 +504,7 @@ class DraftMapper:
         return DraftDetailResponse(
             id=item.id,
             event_id=item.event_id,
-            status=item.status.value if hasattr(item.status, 'value') else item.status,
+            status=DraftStatus(item.status.value),
             drafted_players=drafted_players,
         )
 
@@ -516,7 +516,7 @@ class DraftMapper:
             DraftItemResponse(
                 id=item.id,
                 event_id=item.event_id,
-            status=ApplicationStatus(item.status.value),
+                status=DraftStatus(item.status),
             )
             for item in items
         ]
