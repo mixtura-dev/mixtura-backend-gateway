@@ -20,6 +20,7 @@ from src.domain.models.server.member.response import (
     ReducedMemberResponse,
 )
 from src.domain.models.response import StatusResponse
+from src.domain.exceptions import ServiceException
 
 member_router = APIRouter(
     prefix="/{server_id}/members",
@@ -78,7 +79,7 @@ async def get_my_member(
 ):
     access = await member_service.get_member_by_user(server_id, user_id)
     if access.member_id is None:
-        raise Exception("The user is not a member of the server")
+        raise ServiceException(400, "The user is not a member of the server")
     permission_info = await member_service.get_member_permissions(access)
     member = await member_service.get_member(access, access.member_id)
     return MemberMeResponse.model_validate(

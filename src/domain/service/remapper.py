@@ -20,10 +20,12 @@ from ..models.mixer.response import (
     ApplicationListItemUserResponse,
     ApplicationRoleItemResponse,
     ApplicationRolePriorityResponse,
+    ApplicationStatusResponse,
     DraftDetailResponse,
     DraftedPlayerItemResponse,
     DraftItemResponse,
     EventPlayerResponse,
+    EventPlayerStatus,
     OrganizerResponse,
     PlayerRoleResponse,
     PlayerUpdateResultResponse,
@@ -37,13 +39,14 @@ import src.infra.communication.server.models.rating.response as CommunicationRat
 import src.infra.communication.server.models.game_roles.response as CommunicationGameRoleResponses
 import src.infra.communication.server.models.custom.response as CommunicationCustomResponses
 import src.infra.communication.mixer.models.responses as CommunicationMixerResponses
+from src.infra.communication.auth.schemas.user_info import UserResponse
 
 
 @dataclass
 class MappingContext:
     file_urls: dict[str, str] = field(default_factory=dict)
     member_info: dict[UUID, ReducedMemberResponse] = field(default_factory=dict)
-    user_info: dict[UUID, object] = field(default_factory=dict)
+    user_info: dict[UUID, UserResponse] = field(default_factory=dict)
     integration_names: dict[UUID, str] = field(default_factory=dict)
     custom_info: dict[UUID, CustomResponse] = field(default_factory=dict)
 
@@ -68,7 +71,7 @@ class RatingItemMapper:
             result.append(
                 RatingItemResponse(
                     id=item.id,
-                    icon_url=context.file_urls.get("rating/icon/" + str(item.icon_id)),
+                    icon_url=context.file_urls.get("rating/icon/" + str(item.icon_id), ""),
                     threshold=item.threshold,
                 )
             )
@@ -191,8 +194,8 @@ class GameMapper:
                 GameResponse(
                     id=g.id,
                     name=g.name,
-                    icon_url=context.file_urls.get("game/icon/" + str(g.icon_id)),
-                    banner_url=context.file_urls.get("game/banner/" + str(g.banner_id)),
+                    icon_url=context.file_urls.get("game/icon/" + str(g.icon_id), ""),
+                    banner_url=context.file_urls.get("game/banner/" + str(g.banner_id), ""),
                 )
             )
         return result
@@ -399,8 +402,8 @@ class ApplicationMapper:
             user_info: ApplicationListItemUserResponse | None = None
             if user_obj:
                 user_info = ApplicationListItemUserResponse(
-                    id=getattr(user_obj, "id", uid),
-                    username=getattr(user_obj, "username", None),
+                    id=user_obj.id,
+                    username=user_obj.username,
                 )
 
             roles: list[ApplicationRoleItemResponse] = []
@@ -424,7 +427,7 @@ class ApplicationMapper:
             result.append(ApplicationListItemResponse(
                 id=item.id,
                 member_id=mid,
-                status=item.status.value,
+                status=ApplicationStatusResponse(item.status.value),
                 created_at=item.created_at,
                 user=user_info,
                 roles=roles,
@@ -460,8 +463,8 @@ class PlayerMapper:
             ]
             result.append(EventPlayerResponse(
                 id=item.id,
-                member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
-                status=item.status,
+                member=member if member else ReducedMemberResponse(id=mid, nickname="", user_id=None),
+                status=EventPlayerStatus(item.status.value),
                 is_draft_pinned=item.is_draft_pinned,
                 application_id=item.application_id,
                 custom=custom,
@@ -479,8 +482,8 @@ class PlayerMapper:
         custom = context.custom_info.get(item.custom_id) if item.custom_id else None
         return PlayerUpdateResultResponse(
             id=item.id,
-            member=member if member else ReducedMemberResponse(id=mid, nickname=None, user_id=None),
-            status=item.status,
+            member=member if member else ReducedMemberResponse(id=mid, nickname="", user_id=None),
+            status=EventPlayerStatus(item.status.value),
             custom=custom,
         )
 
@@ -514,7 +517,7 @@ class DraftMapper:
             DraftItemResponse(
                 id=item.id,
                 event_id=item.event_id,
-                status=item.status.value if hasattr(item.status, 'value') else item.status,
+            status=ApplicationStatusResponse(item.status.value),
             )
             for item in items
         ]
@@ -559,8 +562,8 @@ class ApplicationDetailMapper:
         user_info = None
         if user_obj:
             user_info = ApplicationListItemUserResponse(
-                id=getattr(user_obj, "id", uid),
-                username=getattr(user_obj, "username", None),
+                id=user_obj.id,
+                username=user_obj.username,
             )
 
         role_priorities = [
@@ -584,7 +587,7 @@ class ApplicationDetailMapper:
             id=item.id,
             event_id=item.event_id,
             member_id=mid,
-            status=item.status.value if hasattr(item.status, 'value') else item.status,
+            status=ApplicationStatusResponse(item.status.value),
             role_priorities=role_priorities,
             filled_fields=[
                 ApplicationFilledFieldResponse(
@@ -725,7 +728,7 @@ class RemapperService:
         self,
         applications: list[CommunicationMixerResponses.ApplicationListItem],
         member_info: dict[UUID, ReducedMemberResponse],
-        user_info: dict[UUID, object],
+        user_info: dict[UUID, UserResponse],
         integration_names: dict[UUID, str],
     ) -> list[ApplicationListItemResponse]:
         mapper = ApplicationMapper()
@@ -777,7 +780,7 @@ class RemapperService:
         self,
         application: CommunicationMixerResponses.ApplicationDetail,
         member_info: dict[UUID, ReducedMemberResponse],
-        user_info: dict[UUID, object],
+        user_info: dict[UUID, UserResponse],
     ) -> ApplicationDetailResponse:
         mapper = ApplicationDetailMapper()
         context = MappingContext(member_info=member_info, user_info=user_info)

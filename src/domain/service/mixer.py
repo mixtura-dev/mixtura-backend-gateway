@@ -2,8 +2,7 @@ from uuid import UUID
 
 from src.domain.exceptions import ServiceException
 from src.domain.models.access import AccessData
-from src.infra.communication.mixer.models.request import PaginationRequest
-from src.infra.communication.mixer.models.response import ErrorResponse
+from src.infra.communication.mixer.models.shared import ErrorResponse, PaginationRequest
 from src.infra.communication.mixer.repository import MixerEventRepository
 from src.infra.communication.server.repository.game_roles import GameRoleRepository
 from src.infra.communication.server.repository.member import MemberRepository
