@@ -11,7 +11,8 @@ from ..models.server.game_roles.response import (
 )
 from ..models.server.rating.response import RatingItemResponse, RatingSetResponse
 from ..models.server.games.response import GameResponse
-from ..models.mixer.response import (
+from ..models.mixer.enums import ApplicationStatus, EventPlayerStatus
+from ..models.mixer.responses import (
     ApplicationDetailResponse,
     ApplicationFilledFieldResponse,
     ApplicationIntegrationItemResponse,
@@ -20,12 +21,10 @@ from ..models.mixer.response import (
     ApplicationListItemUserResponse,
     ApplicationRoleItemResponse,
     ApplicationRolePriorityResponse,
-    ApplicationStatusResponse,
     DraftDetailResponse,
     DraftedPlayerItemResponse,
     DraftItemResponse,
     EventPlayerResponse,
-    EventPlayerStatus,
     OrganizerResponse,
     PlayerRoleResponse,
     PlayerUpdateResultResponse,
@@ -427,7 +426,7 @@ class ApplicationMapper:
             result.append(ApplicationListItemResponse(
                 id=item.id,
                 member_id=mid,
-                status=ApplicationStatusResponse(item.status.value),
+                status=ApplicationStatus(item.status.value),
                 created_at=item.created_at,
                 user=user_info,
                 roles=roles,
@@ -517,7 +516,7 @@ class DraftMapper:
             DraftItemResponse(
                 id=item.id,
                 event_id=item.event_id,
-            status=ApplicationStatusResponse(item.status.value),
+            status=ApplicationStatus(item.status.value),
             )
             for item in items
         ]
@@ -587,7 +586,7 @@ class ApplicationDetailMapper:
             id=item.id,
             event_id=item.event_id,
             member_id=mid,
-            status=ApplicationStatusResponse(item.status.value),
+            status=ApplicationStatus(item.status.value),
             role_priorities=role_priorities,
             filled_fields=[
                 ApplicationFilledFieldResponse(

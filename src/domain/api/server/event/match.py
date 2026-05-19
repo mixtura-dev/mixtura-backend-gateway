@@ -8,8 +8,8 @@ from src.dependency import (
     MixerEventServiceDependency,
     PaginationDependency,
 )
-from src.domain.models.mixer.request import RecordMatchResultRequest, SetupMatchRequest
-from src.domain.models.mixer.response import SingleMatchViewResponse
+from src.domain.models.mixer.requests import RecordMatchResultRequest, SetupMatchRequest
+from src.domain.models.mixer.responses import SingleMatchViewResponse
 
 from ._utils import get_access
 

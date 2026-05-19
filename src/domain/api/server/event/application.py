@@ -10,15 +10,15 @@ from src.dependency import (
     PaginationDependency,
     RemapperServiceDependency,
 )
-from src.domain.models.mixer.request import (
-    ApplicationStatus,
+from src.domain.models.mixer.enums import ApplicationStatus
+from src.domain.models.mixer.requests import (
     ReviewApplicationRequest,
     SubmitApplicationRequest,
     AddCustomFieldRequest,
     UpdateCustomFieldRequest,
     UpdateTimeSettingsRequest,
 )
-from src.domain.models.mixer.response import (
+from src.domain.models.mixer.responses import (
     ApplicationDetailResponse,
     ApplicationFormSettingsResponse,
     ApplicationListItemResponse,

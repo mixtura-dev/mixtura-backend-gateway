@@ -10,13 +10,13 @@ from src.dependency import (
     PaginationDependency,
     RemapperServiceDependency,
 )
-from src.domain.models.mixer.request import (
+from src.domain.models.mixer.enums import EventPlayerStatus
+from src.domain.models.mixer.requests import (
     AddPlayerRequest,
-    EventPlayerStatus,
     UpdatePlayerRolesRequest,
     UpdatePlayerStatusRequest,
 )
-from src.domain.models.mixer.response import (
+from src.domain.models.mixer.responses import (
     EventPlayerResponse,
     PlayerUpdateResultResponse,
 )

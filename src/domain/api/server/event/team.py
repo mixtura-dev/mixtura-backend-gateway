@@ -8,7 +8,7 @@ from src.dependency import (
     MixerEventServiceDependency,
     PaginationDependency,
 )
-from src.domain.models.mixer.response import TeamItemResponse
+from src.domain.models.mixer.responses import TeamItemResponse
 
 from ._utils import get_access
 

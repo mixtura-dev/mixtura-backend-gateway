@@ -9,8 +9,8 @@ from src.dependency import (
     PaginationDependency,
     RemapperServiceDependency,
 )
-from src.domain.models.mixer.request import CreateDraftRequest
-from src.domain.models.mixer.response import (
+from src.domain.models.mixer.requests import CreateDraftRequest
+from src.domain.models.mixer.responses import (
     DraftDetailResponse,
     DraftItemResponse,
 )

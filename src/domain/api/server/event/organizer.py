@@ -8,8 +8,8 @@ from src.dependency import (
     MixerEventServiceDependency,
     PaginationDependency,
 )
-from src.domain.models.mixer.request import AddOrganizerRequest
-from src.domain.models.mixer.response import (
+from src.domain.models.mixer.requests import AddOrganizerRequest
+from src.domain.models.mixer.responses import (
     OrganizerItemResponse,
     OrganizerListItemResponse,
 )

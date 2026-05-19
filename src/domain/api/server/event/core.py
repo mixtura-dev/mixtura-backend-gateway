@@ -9,14 +9,14 @@ from src.dependency import (
     PaginationDependency,
     RemapperServiceDependency,
 )
-from src.domain.models.mixer.request import (
+from src.domain.models.mixer.requests import (
     CreateEventRequest,
     UpdateEventRequest,
     AddIntegrationRequest,
     AddGameRoleRequest,
     UpdateGameRoleRequest,
 )
-from src.domain.models.mixer.response import EventCardResponse, EventDetailResponse
+from src.domain.models.mixer.responses import EventCardResponse, EventDetailResponse
 from src.domain.models.server.member.response import ReducedMemberResponse
 
 from ._utils import get_access
