@@ -36,7 +36,7 @@ import src.infra.communication.server.models.games.response as CommunicationGame
 import src.infra.communication.server.models.rating.response as CommunicationRatingResponses
 import src.infra.communication.server.models.game_roles.response as CommunicationGameRoleResponses
 import src.infra.communication.server.models.custom.response as CommunicationCustomResponses
-import src.infra.communication.mixer.models.response as CommunicationMixerResponses
+import src.infra.communication.mixer.models.responses as CommunicationMixerResponses
 
 
 @dataclass
