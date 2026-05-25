@@ -9,8 +9,6 @@ class RatingSnapshotPlayer(BaseModel):
     game_role_id: UUID
     priority: int
     open_rating: float
-    calculated_rating: float
-    effective_rating: float | None = None
     rating_source: str = "open"
 
 
@@ -23,20 +21,33 @@ class TeamFormationVariantTeam(BaseModel):
     calculated_ratings: list[float]
 
 
-class TeamFormationVariantMetrics(BaseModel):
-    strength_diff: float = 0.0
-    role_fit: float = 0.0
-    rating_spread: float = 0.0
-    constraint_violations: int = 0
-    raw_metrics: dict[str, float] = Field(default_factory=dict)
+class MixQualityMetrics(BaseModel):
+    uniformity: float
+    fairness: float
+    role_points: float
+    role_fairness: float
+
+
+class TournamentQualityMetrics(BaseModel):
+    dp_fairness: float = 0.0
+    dp_role_fairness: float = 0.0
+    vq_uniformity: float = 0.0
+    role_priority_points: float = 0.0
+    fitness_balance: float = 0.0
+    fitness_priority: float = 0.0
+    fitness_role_imbalance: float = 0.0
+    fitness_team_spread: float = 0.0
+    fitness_subrole: float = 0.0
+    role_subrole_penalty: float = 0.0
+    evaluation: float = 0.0
 
 
 class TeamFormationVariant(BaseModel):
     id: UUID
     draft_id: UUID
     teams: list[TeamFormationVariantTeam] = Field(default_factory=list)
-    metrics: TeamFormationVariantMetrics = Field(
-        default_factory=TeamFormationVariantMetrics
+    metrics: MixQualityMetrics | TournamentQualityMetrics = Field(
+        default_factory=TournamentQualityMetrics
     )
     is_selected: bool = False
 

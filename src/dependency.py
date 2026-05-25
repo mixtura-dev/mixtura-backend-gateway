@@ -223,9 +223,10 @@ async def get_mixer_event_service(
     rating_repo: RatingRepositoryDependency,
     member_repo: MemberRepositoryDependency,
     game_role_repo: GameRoleRepositoryDependency,
+    custom_repo: MemberCustomRepositoryDependency,
     auth_service: AuthServiceDependency,
 ):
-    return MixerEventService(event_repo, rating_repo, member_repo, game_role_repo, auth_service)
+    return MixerEventService(event_repo, rating_repo, member_repo, game_role_repo, custom_repo, auth_service)
 
 
 MixerEventServiceDependency = Annotated[

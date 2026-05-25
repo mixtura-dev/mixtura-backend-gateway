@@ -47,3 +47,9 @@ class UpdatePlayerRolesRequest(BaseModel):
     event_id: UUID
     member_id: UUID
     roles: list[RolePriorityInput]
+
+
+class BulkGetPlayersRequest(BaseModel):
+    access_data: AccessDataRequest
+    event_id: UUID
+    player_ids: list[UUID]

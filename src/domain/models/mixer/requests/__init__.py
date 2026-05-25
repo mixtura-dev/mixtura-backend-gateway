@@ -21,7 +21,6 @@ from .match import (
     SetupMatchRequest,
 )
 from .team_formation import (
-    RatingSnapshotInput,
     RunTeamFormationRequest,
 )
 from .settings import (
@@ -45,7 +44,6 @@ __all__ = [
     "FilledFieldPayload",
     "IntegrationPayload",
     "PlayerRolePayload",
-    "RatingSnapshotInput",
     "RecordMatchResultRequest",
     "ReviewApplicationRequest",
     "RolePriorityPayload",

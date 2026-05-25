@@ -3,10 +3,15 @@ from uuid import UUID
 from src.domain.exceptions import ServiceException
 from src.domain.models.access import AccessData
 from src.infra.communication.mixer.models.shared import ErrorResponse, PaginationRequest
+from src.infra.communication.mixer.models.requests.team_formation import (
+    RatingSnapshotInput,
+)
 from src.infra.communication.mixer.repository import MixerEventRepository
+from src.infra.communication.server.repository.custom import MemberCustomRepository
 from src.infra.communication.server.repository.game_roles import GameRoleRepository
 from src.infra.communication.server.repository.member import MemberRepository
 from src.infra.communication.server.models.response import ErrorResponse as ServerErrorResponse
+from src.infra.communication.server.models.custom.response import CustomResponse as InfraCustomResponse
 from src.infra.communication.server.repository.rating import RatingRepository
 
 
@@ -17,12 +22,14 @@ class MixerEventService:
         rating_repository: RatingRepository,
         member_repository: MemberRepository,
         game_role_repository: GameRoleRepository,
+        custom_repository: MemberCustomRepository,
         auth_service=None,
     ) -> None:
         self.event_repository = event_repository
         self.rating_repository = rating_repository
         self.member_repository = member_repository
         self.game_role_repository = game_role_repository
+        self.custom_repository = custom_repository
         self.auth_service = auth_service
 
     def _unwrap(self, response):
@@ -249,12 +256,69 @@ class MixerEventService:
             )
         )
 
+    async def _get_drafted_players(self, access: AccessData, event_id: UUID, drafted_ids: set[UUID]):
+        response = await self.event_repository.get_players_by_ids(
+            access, event_id, list(drafted_ids)
+        )
+        return self._unwrap(response)
+
+    async def _load_customs_for_players(self, access: AccessData, players):
+        member_to_custom_ids: dict[UUID, set[UUID]] = {}
+        for p in players:
+            if p.custom_id:
+                member_to_custom_ids.setdefault(p.member_id, set()).add(p.custom_id)
+
+        custom_by_id: dict[UUID, InfraCustomResponse] = {}
+        for member_id, custom_ids in member_to_custom_ids.items():
+            response = await self.custom_repository.get_customs_by_member(
+                access, member_id
+            )
+            if isinstance(response.message, ServerErrorResponse):
+                continue
+            for c in response.message:
+                if c.id in custom_ids:
+                    custom_by_id[c.id] = c
+        return custom_by_id
+
+    async def _build_rating_snapshot(self, access: AccessData, draft_id: UUID) -> list[RatingSnapshotInput]:
+        draft = self._unwrap(await self.event_repository.get_draft(access, draft_id))
+
+        drafted_ids = {dp.event_player_id for dp in draft.drafted_players}
+        if not drafted_ids:
+            return []
+
+        players = await self._get_drafted_players(access, draft.event_id, drafted_ids)
+
+        custom_by_id = await self._load_customs_for_players(access, players)
+
+        snapshot: list[RatingSnapshotInput] = []
+        for player in players:
+            custom = custom_by_id.get(player.custom_id) if player.custom_id else None
+            for role in player.roles:
+                open_rating = 1000.0
+                if custom:
+                    for cr in custom.custom_ratings:
+                        if cr.game_role.id == role.game_role_id:
+                            open_rating = float(cr.rating)
+                            break
+                snapshot.append(RatingSnapshotInput(
+                    member_id=player.member_id,
+                    event_player_id=player.id,
+                    game_role_id=role.game_role_id,
+                    priority=role.priority,
+                    open_rating=open_rating,
+                ))
+        return snapshot
+
     async def run_team_formation(self, access: AccessData, draft_id: UUID, body):
+        rating_snapshot = await self._build_rating_snapshot(access, draft_id)
         await self._ensure_game_roles_exist(
-            access, {item.game_role_id for item in body.rating_snapshot}
+            access, {item.game_role_id for item in rating_snapshot}
         )
         return self._unwrap(
-            await self.event_repository.run_team_formation(access, draft_id, body)
+            await self.event_repository.run_team_formation(
+                access, draft_id, body, rating_snapshot
+            )
         )
 
     async def get_team_formation(

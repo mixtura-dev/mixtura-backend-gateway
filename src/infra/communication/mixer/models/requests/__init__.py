@@ -26,6 +26,7 @@ from .organizer import (
 )
 from .player import (
     AddPlayerRequest,
+    BulkGetPlayersRequest,
     ListPlayersRequest,
     RemovePlayerRequest,
     RolePriorityInput,
@@ -85,6 +86,7 @@ __all__ = [
     "ListOrganizersRequest",
     "RemoveOrganizerRequest",
     "AddPlayerRequest",
+    "BulkGetPlayersRequest",
     "ListPlayersRequest",
     "RemovePlayerRequest",
     "RolePriorityInput",

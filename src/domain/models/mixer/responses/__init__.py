@@ -42,11 +42,12 @@ from .team import (
     TeamPlayerItemResponse,
 )
 from .team_formation import (
+    MixQualityMetricsResponse,
     RatingSnapshotPlayerResponse,
     TeamFormationJobResponse,
-    TeamFormationVariantMetricsResponse,
     TeamFormationVariantResponse,
     TeamFormationVariantTeamResponse,
+    TournamentQualityMetricsResponse,
 )
 
 __all__ = [
@@ -67,6 +68,7 @@ __all__ = [
     "EventCardResponse",
     "EventDetailResponse",
     "EventPlayerResponse",
+    "MixQualityMetricsResponse",
     "OrganizerItemResponse",
     "OrganizerListItemResponse",
     "OrganizerResponse",
@@ -81,9 +83,9 @@ __all__ = [
     "SubmitApplicationResponse",
     "TeamDetailResponse",
     "TeamFormationJobResponse",
-    "TeamFormationVariantMetricsResponse",
     "TeamFormationVariantResponse",
     "TeamFormationVariantTeamResponse",
     "TeamItemResponse",
     "TeamPlayerItemResponse",
+    "TournamentQualityMetricsResponse",
 ]

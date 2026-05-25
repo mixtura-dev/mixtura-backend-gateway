@@ -19,6 +19,7 @@ from .models import (
     ApplicationListItem,
     ApplicationReviewResult,
     ApplicationSubmitResult,
+    BulkGetPlayersRequest,
     CancelEventRequest,
     ChooseTeamFormationVariantRequest,
     CloseRegistrationRequest,
@@ -460,6 +461,21 @@ class MixerEventRepository:
             response.body
         )
 
+    async def get_players_by_ids(
+        self, access: AccessData, event_id: UUID, player_ids: list[UUID]
+    ) -> ResponseMessage[ErrorResponse | list[PlayerItem]]:
+        request = BulkGetPlayersRequest(
+            access_data=self._access_data(access),
+            event_id=event_id,
+            player_ids=player_ids,
+        )
+        response = await rpc_request(
+            self.rpc_client, request, queue="event.player.bulk_get"
+        )
+        return ResponseMessage[ErrorResponse | list[PlayerItem]].model_validate_json(
+            response.body
+        )
+
     # ------------------------------------------------------------------
     # Draft
     # ------------------------------------------------------------------
@@ -512,12 +528,17 @@ class MixerEventRepository:
     # ------------------------------------------------------------------
 
     async def run_team_formation(
-        self, access: AccessData, draft_id: UUID, body: BaseModel
+        self, access: AccessData, draft_id: UUID, body: BaseModel,
+        rating_snapshot: list | None = None,
     ) -> ResponseMessage[ErrorResponse | TeamFormationJob]:
+        data = body.model_dump()
+        data["rating_snapshot"] = (
+            [s.model_dump() for s in rating_snapshot] if rating_snapshot else []
+        )
         request = RunTeamFormationRequest(
             access_data=self._access_data(access),
             draft_id=draft_id,
-            **body.model_dump(),
+            **data,
         )
         response = await rpc_request(
             self.rpc_client, request, queue="event.team_formation.run"

@@ -30,11 +30,12 @@ from .draft import (
     DraftedPlayerItem,
 )
 from .team_formation import (
+    MixQualityMetrics,
     RatingSnapshotPlayer,
     TeamFormationJob,
     TeamFormationVariant,
-    TeamFormationVariantMetrics,
     TeamFormationVariantTeam,
+    TournamentQualityMetrics,
 )
 from .team import (
     TeamDetail,
@@ -70,11 +71,12 @@ __all__ = [
     "DraftDetail",
     "DraftItem",
     "DraftedPlayerItem",
+    "MixQualityMetrics",
     "RatingSnapshotPlayer",
     "TeamFormationJob",
     "TeamFormationVariant",
-    "TeamFormationVariantMetrics",
     "TeamFormationVariantTeam",
+    "TournamentQualityMetrics",
     "TeamDetail",
     "TeamItem",
     "TeamPlayerItem",
